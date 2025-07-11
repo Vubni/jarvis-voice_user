@@ -27,7 +27,7 @@
 
 #include <QApplication>
 #include <QThread>
-#include "GradientWidget.h"
+#include "gradientwidget.h"
 #include "animationcontroller.h"
 
 using namespace std;
@@ -184,37 +184,58 @@ void output_thread() {
     }
 }
 
+// Поток для записи аудио
+void audio_record_thread(pv_recorder_t* recorder) {
+    int file_counter = 0;
+    while (!stop_flag) {
+        vector<int16_t> audio_buffer(512);
+        if (pv_recorder_read(recorder, audio_buffer.data()) == PV_RECORDER_STATUS_SUCCESS) {
+            // Сохраняем каждый буфер в отдельный файл (для отладки/аналитики)
+            stringstream filename;
+            filename << "audio_chunks/chunk_" << setw(5) << setfill('0') << file_counter++ << ".raw";
+            ofstream out(filename.str(), ios::binary);
+            if (out.is_open()) {
+                out.write(reinterpret_cast<const char*>(audio_buffer.data()), audio_buffer.size() * sizeof(int16_t));
+                out.close();
+            }
+            // Добавляем данные в очередь для распознавания
+            {
+                lock_guard<mutex> lock(queue_mutex);
+                audio_queue.push(audio_buffer);
+            }
+            queue_cv.notify_one();
+        }
+        this_thread::sleep_for(chrono::milliseconds(10));
+    }
+}
+
 int main(int argc, char *argv[]) {
     QApplication app(argc, argv);
 
     // Создаем контроллер анимации
     QThread workerThread;
-
-    // Перемещаем контроллер в отдельный поток
     controller.moveToThread(&workerThread);
-
-    // Подключаем сигналы к функциям GUI
     QObject::connect(&controller, &AnimationController::toggleAnimation, 
                     [&](bool isActive) {
         if (isActive) {
-            OnAnimation(); // Функция, которая включает анимацию
+            OnAnimation();
         } else {
-            OffAnimation(); // Функция, которая выключает анимацию
+            OffAnimation();
         }
     });
-
     workerThread.start();
 
-    // Установка кодировки UTF-8 для Windows
     SetConsoleOutputCP(CP_UTF8);
     SetConsoleCP(CP_UTF8);
 
-    // Создание папки logs, если её нет
     if (!filesystem::exists("logs")) {
         filesystem::create_directory("logs");
     }
+    if (!filesystem::exists("audio_chunks")) {
+        filesystem::create_directory("audio_chunks");
+    }
 
-    error_log_file.open("logs/error.log", ios_base::app); // Добавляем к предыдущим логам
+    error_log_file.open("logs/error.log", ios_base::app);
     if (!error_log_file.is_open()) {
         cerr << "Не удалось открыть файл логов!" << endl;
     } else {
@@ -223,25 +244,21 @@ int main(int argc, char *argv[]) {
 
     mainCommands();
 
-    // Загрузка модели Vosk
     VoskModel* model = vosk_model_new("./models/vosk-big");
     if (!model) {
         cerr << "Не удалось загрузить модель Vosk" << endl;
         return -1;
     }
 
-    // Создание распознавателя
     VoskRecognizer* recognizer = vosk_recognizer_new(model, 16000.0f);
     vosk_recognizer_set_max_alternatives(recognizer, 0);
-    
-    // Инициализация рекордера
+
     pv_recorder_t* recorder = nullptr;
     if (pv_recorder_init(512, -1, 5, &recorder) != PV_RECORDER_STATUS_SUCCESS) {
         cerr << "Ошибка инициализации PvRecorder" << endl;
         vosk_model_free(model);
         return -1;
     }
-
     if (pv_recorder_start(recorder) != PV_RECORDER_STATUS_SUCCESS) {
         cerr << "Ошибка запуска записи" << endl;
         pv_recorder_delete(recorder);
@@ -253,10 +270,10 @@ int main(int argc, char *argv[]) {
 
     thread rec_thread;
     thread out_thread;
+    thread audio_thread;
     bool thread_started = false;
-    
-    // Запуск потока распознавания
     try {
+        audio_thread = thread(audio_record_thread, recorder);
         rec_thread = thread(recognition_thread, recognizer);
         out_thread = thread(output_thread);
         thread_started = true;
@@ -269,26 +286,16 @@ int main(int argc, char *argv[]) {
         return -1;
     }
 
-    // Чтение аудио в основном потоке
-    while (!stop_flag) {
-        vector<int16_t> audio_buffer(512);
-        
-        if (pv_recorder_read(recorder, audio_buffer.data()) == PV_RECORDER_STATUS_SUCCESS) {
-            // Добавляем данные в очередь
-            {
-                lock_guard<mutex> lock(queue_mutex);
-                audio_queue.push(audio_buffer);
-            }
-            queue_cv.notify_one();
-        }
-        
-        this_thread::sleep_for(chrono::milliseconds(10));
-    }
+    // Главный поток — только Qt event loop
+    int qt_result = app.exec();
 
+    // Завершаем работу потоков
+    stop_flag = true;
+    queue_cv.notify_all();
+    if (audio_thread.joinable()) audio_thread.join();
     if (rec_thread.joinable()) rec_thread.join();
     if (out_thread.joinable()) out_thread.join();
 
-    // Очистка
     pv_recorder_stop(recorder);
     pv_recorder_delete(recorder);
     vosk_recognizer_free(recognizer);
@@ -299,5 +306,5 @@ int main(int argc, char *argv[]) {
         error_log_file.close();
     }
 
-    return app.exec();
+    return qt_result;
 }

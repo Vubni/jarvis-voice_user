@@ -23,19 +23,23 @@ public:
         setAttribute(Qt::WA_TranslucentBackground);
         setAttribute(Qt::WA_TransparentForMouseEvents);
 
-        setWindowFlags(Qt::FramelessWindowHint | Qt::WindowStaysOnTopHint | Qt::Tool);
-        
+        setWindowFlags(Qt::FramelessWindowHint | Qt::WindowStaysOnTopHint);
+
         // Отладка: вывод текущей геометрии
         qDebug() << "Window geometry:" << geometry();
 
+        // Настройка таймера для обновления анимации
         QTimer *timer = new QTimer(this);
-        connect(timer, &QTimer::timeout, this, QOverload<>::of(&QWidget::update));
+        connect(timer, &QTimer::timeout, this, [this]() { this->update(); });
         timer->start(30); // ~33 FPS
     }
 
 protected:
     void paintEvent(QPaintEvent *) override {
-        qDebug() << "paintEvent started";
+        // Проверка на пустую область
+        if (rect().isEmpty())
+            return;
+
         QPainter painter(this);
 
         const int borderWidth = 1;
@@ -82,21 +86,17 @@ namespace {
 
 extern "C" {
     void OnAnimation() {
-        // Проверяем, существует ли QApplication (предполагаем, что он уже создан)
-        if (QApplication::instance() == nullptr) {
-            int argc = 1;
-            char* argv[] = {(char*)"GradientWidget"};
-            static QApplication app(argc, argv); // Инициализация QApplication
-            // Сохраняем указатель на QApplication в статической переменной, если необходимо
-            static bool appInitialized = true;
-            // Не вызываем app.exec() здесь, так как он должен быть в main()
+        // Проверяем, существует ли QApplication
+        if (!QApplication::instance()) {
+            qWarning() << "QApplication must be initialized before calling OnAnimation.";
+            return;
         }
 
         // Создаем и показываем виджет
         if (!animationWidget) {
             animationWidget = new GradientWidget();
             animationWidget->show();
-            animationWidget->update(); // Принудительное обновление
+            animationWidget->update();
         }
     }
 
