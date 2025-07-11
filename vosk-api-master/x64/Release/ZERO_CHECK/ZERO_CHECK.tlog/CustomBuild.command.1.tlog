@@ -1,0 +1,10 @@
+^E:\G++\JARVIS_VOICE\VOSK-API-MASTER\CMAKEFILES\7070F9992EF54774DD594FDF4A2C6D85\GENERATE.STAMP.RULE
+setlocal
+"C:\Program Files\CMake\bin\cmake.exe" -SE:/g++/jarvis_voice -BE:/g++/jarvis_voice/vosk-api-master --check-stamp-list CMakeFiles/generate.stamp.list --vs-solution-file E:/g++/jarvis_voice/vosk-api-master/jarvis.sln
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal & call :cmErrorLevel %errorlevel% & goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd

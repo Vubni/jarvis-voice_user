@@ -1,0 +1,3 @@
+// api_key.h
+#pragma once
+#define OPENAI_API_KEY "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"
