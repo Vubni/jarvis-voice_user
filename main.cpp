@@ -213,8 +213,6 @@ int main(int argc, char *argv[]) {
     QApplication app(argc, argv);
 
     // Создаем контроллер анимации
-    QThread workerThread;
-    controller.moveToThread(&workerThread);
     QObject::connect(&controller, &AnimationController::toggleAnimation, 
                     [&](bool isActive) {
         if (isActive) {
@@ -223,7 +221,6 @@ int main(int argc, char *argv[]) {
             OffAnimation();
         }
     });
-    workerThread.start();
 
     SetConsoleOutputCP(CP_UTF8);
     SetConsoleCP(CP_UTF8);
