@@ -56,6 +56,11 @@ int main(int argc, char *argv[]) {
 
     mainCommands();
 
+    log_info("Create session..");
+    nlohmann::json pathsPrograms = InstalledPrograms::GetInstalledPrograms();
+    create_session(pathsPrograms);
+    log_info("Successful Create session.");
+
     VoskModel* model = vosk_model_new("./models/small");
     if (!model) {
         cerr << "Failed to load Vosk model" << endl;

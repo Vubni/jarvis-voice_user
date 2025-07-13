@@ -1,8 +1,6 @@
 #include "api.h"
 #include <vector>
 
-bool start = false;
-
 void create_session(json pathsPrograms) {
     const std::string base_url = "https://api.vubni.com/create_session"; 
     
@@ -80,12 +78,6 @@ void command_processing(string text){
 }
 
 void command_execution(string text){
-    if (!start){
-        start = true;
-        log_info("Create session");
-        nlohmann::json pathsPrograms = InstalledPrograms::GetInstalledPrograms();
-        create_session(pathsPrograms);
-    }
     log_info("Command execution started with text: " + text);
     command_processing(text);
 }

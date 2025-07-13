@@ -13,6 +13,7 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 set(LIB_DIR "${CMAKE_SOURCE_DIR}/libs")
 set(CMAKE_PREFIX_PATH "E:/Q/Qt")
 
+set(VCPKG_TARGET_TRIPLET "x64-windows" CACHE STRING "")
 set(CMAKE_TOOLCHAIN_FILE 
     "E:/g++/jarvis_voice/user/vcpkg/scripts/buildsystems/vcpkg.cmake" 
     CACHE STRING "Путь к toolchain файлу vcpkg"
@@ -45,20 +46,44 @@ qt6_wrap_cpp(MOC_SOURCES
     include/src/animationcontroller.h
 )
 
+add_definitions(-D_CRT_SECURE_NO_WARNINGS -D_CRT_NONSTDC_NO_WARNINGS)
+
 add_executable(jarvis ${SOURCE_EXE} ${MOC_SOURCES})
 
+# if(MSVC)
+#     # Копирование CRT DLL
+#     get_filename_component(VC_REDIST_DIR "[HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\VisualStudio\\14.0\\VC\\Runtimes\\x64;InstallDir]" ABSOLUTE)
+#     set(VCRUNTIME_DLLS "${VC_REDIST_DIR}/vcruntime140.dll" "${VC_REDIST_DIR}/vcruntime140_1.dll" "${VC_REDIST_DIR}/msvcp140.dll")
+#     add_custom_command(TARGET jarvis POST_BUILD
+#     COMMAND ${CMAKE_COMMAND} -E copy
+#         "${LIB_DIR}/libcurl.dll"
+#         "${LIB_DIR}/zlib1.dll"
+#         $<TARGET_FILE_DIR:jarvis>
+#     )
+# endif()
+
 target_link_libraries(jarvis
-PRIVATE pv_recorder vosk nlohmann_json::nlohmann_json libcurl_a
+PRIVATE pv_recorder vosk nlohmann_json::nlohmann_json 
+libcurl_a Normaliz.lib advapi32.lib
 ${CURL_LIBRARY} ws2_32 Crypt32 Wldap32 base64
 sndfile user32
 SDL2 SDL2_mixer
 Qt::Core
 Qt::Gui
-Qt::Widgets)
+Qt::Widgets
+ucrt.lib
+vcruntime.lib
+msvcrt.lib
+legacy_stdio_definitions.lib)
 
 include_directories(${Qt6Gui_INCLUDE_DIRS})
 
-add_custom_command(TARGET jarvis
-    POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E copy_directory ${LIB_DIR} ${CMAKE_BINARY_DIR}
-)
+
+# add_custom_command(TARGET jarvis POST_BUILD
+#     COMMAND "${Qt6_DIR}/../../../bin/windeployqt.exe"
+#         --verbose 1
+#         --no-compiler-runtime
+#         --no-translations
+#         "$<TARGET_FILE:jarvis>"
+#     WORKING_DIRECTORY "${CMAKE_BINARY_DIR}"
+# )

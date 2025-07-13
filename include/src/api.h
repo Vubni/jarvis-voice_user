@@ -14,5 +14,6 @@ using namespace std;
 using json = nlohmann::json;
 
 void command_execution(string text);
+void create_session(json pathsPrograms);
 
 #endif // COMMAND_PROCESSOR_H

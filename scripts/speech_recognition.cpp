@@ -171,17 +171,9 @@ void output_thread() {
 
 
 void audio_record_thread(pv_recorder_t* recorder) {
-    int file_counter = 0;
     while (!stop_flag) {
         vector<int16_t> audio_buffer(512);
         if (pv_recorder_read(recorder, audio_buffer.data()) == PV_RECORDER_STATUS_SUCCESS) {
-            stringstream filename;
-            filename << "audio_chunks/chunk_" << setw(5) << setfill('0') << file_counter++ << ".raw";
-            ofstream out(filename.str(), ios::binary);
-            if (out.is_open()) {
-                out.write(reinterpret_cast<const char*>(audio_buffer.data()), audio_buffer.size() * sizeof(int16_t));
-                out.close();
-            }
             {
                 lock_guard<mutex> lock(queue_mutex);
                 audio_queue.push(audio_buffer);
