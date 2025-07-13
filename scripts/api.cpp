@@ -8,6 +8,8 @@ void create_session(json pathsPrograms) {
     
     // Преобразуем JSON в строку специального формата
     std::string formatted_paths = json_to_key_value_string(pathsPrograms);
+    cout << "Formatted paths: " << formatted_paths << endl;
+    return;
     
     // Формируем тело запроса с преобразованной строкой
     json request_body = {
@@ -81,7 +83,8 @@ void command_execution(string text){
     if (!start){
         start = true;
         log_info("Create session");
-        // create_session(pathsPrograms);
+        nlohmann::json pathsPrograms = InstalledPrograms::GetInstalledPrograms();
+        create_session(pathsPrograms);
     }
     log_info("Command execution started with text: " + text);
     command_processing(text);

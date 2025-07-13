@@ -15,23 +15,32 @@ class GradientWidget : public QWidget {
 
 public:
     explicit GradientWidget(QWidget *parent = nullptr) : QWidget(parent) {
-        // Установка полноэкранного режима через setGeometry
+        // Установка полноэкранного режима
         QRect screenGeometry = QApplication::primaryScreen()->geometry();
         setGeometry(screenGeometry);
 
-        // Атрибуты прозрачности
+        // Критические атрибуты окна
         setAttribute(Qt::WA_TranslucentBackground);
         setAttribute(Qt::WA_TransparentForMouseEvents);
+        setAttribute(Qt::WA_ShowWithoutActivating); // Предотвращает активацию окна
+        setAttribute(Qt::WA_X11DoNotAcceptFocus);   // Для X11
+        setAttribute(Qt::WA_MacAlwaysShowToolWindow); // Для macOS совместимость
 
-        setWindowFlags(Qt::FramelessWindowHint | Qt::WindowStaysOnTopHint);
+        // Комбинированные флаги окна
+        setWindowFlags(
+            Qt::FramelessWindowHint |
+            Qt::WindowStaysOnTopHint |
+            Qt::ToolTip |               // Скрывает из панели задач и Alt+Tab
+            Qt::WindowDoesNotAcceptFocus // Предотвращает фокусировку
+        );
 
-        // Отладка: вывод текущей геометрии
+        // Отладка геометрии
         qDebug() << "Window geometry:" << geometry();
 
-        // Настройка таймера для обновления анимации
+        // Настройка анимации
         QTimer *timer = new QTimer(this);
         connect(timer, &QTimer::timeout, this, [this]() { this->update(); });
-        timer->start(30); // ~33 FPS
+        timer->start(30);
     }
 
 protected:

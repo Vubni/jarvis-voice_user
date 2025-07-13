@@ -81,6 +81,15 @@ void recognition_thread(VoskRecognizer* recognizer) {
     }
 }
 
+bool contains_jarvis(const string& text) {
+    return text.find("джарв") != string::npos || text.find("джерв") != string::npos;
+}
+
+bool is_last_word_jarvis(const string& text) {
+    string last_word = get_word(text, -1);
+    return last_word.find("джарв") != string::npos || last_word.find("джерв") != string::npos;
+}
+
 void output_thread() {
     time_point<system_clock> last_change_time = system_clock::now();
     time_point<system_clock> last_change_text_time = system_clock::now();
@@ -101,21 +110,20 @@ void output_thread() {
             last_change_time = system_clock::now();
             last_change_text_time = system_clock::now();
 
-            if (status && (last_text.find("джарв") != string::npos || last_text.find("джерв") != string::npos)) {
+            if (status && contains_jarvis(last_text)) {
                 MuteOtherApplications();
                 QMetaObject::invokeMethod(&controller, "toggleAnimation", Qt::QueuedConnection, 
                              Q_ARG(bool, true));
-                if (get_word(last_text, -1).find("джарв") != string::npos || get_word(last_text, -1).find("джерв") != string::npos) {
+                if (is_last_word_jarvis(last_text)) {
                     play_pending = true;
+                    pending_audio_path = "greet/" + (string)randomizer({"1", "2"});
                 }
+                
+                last_found_jarvis = system_clock::now();
+                jarvis_text = last_text; 
                 play_status = false;
                 status = false;
-                last_found_jarvis = system_clock::now();
-                jarvis_text = last_text;
                 cout << endl << jarvis_text << endl;
-                pending_audio_path = "greet/" + (string)randomizer({"1", "2"});
-            } else if ((last_text.find("джарв") == string::npos || last_text.find("джерв") == string::npos) && play_pending) {
-                play_pending = false;
             }
         }
 
@@ -123,11 +131,10 @@ void output_thread() {
         if (play_pending) {
             auto elapsed = duration_cast<milliseconds>(now - last_found_jarvis).count();
             if (elapsed >= 350 && last_text == jarvis_text) {
-                cout << endl << jarvis_text << endl;
                 thread(playAudio, pending_audio_path).detach();
                 play_pending = false;
                 play_status = true;
-            } else if (last_text != jarvis_text || get_word(last_text, -1).find("джарв") == string::npos || get_word(last_text, -1).find("джерв") == string::npos) {
+            } else if (!is_last_word_jarvis(last_text)) {
                 play_pending = false;
             }
         }
@@ -144,7 +151,6 @@ void output_thread() {
 
         if (elapsed_ms >= silence_timeout && !last_text.empty() && elapsed_ms_text >= 700) {
             if ((last_text.find("джарв") != string::npos && get_word(last_text, -1).find("джарв") == string::npos) || last_text.find("джерв") != string::npos && get_word(last_text, -1).find("джерв") == string::npos) {
-                cout << endl << last_text << endl;
                 thread execution = thread(command_execution, last_text);
                 execution.detach();
             }

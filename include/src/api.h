@@ -8,6 +8,7 @@
 #include "logger.h"
 #include "core.h"
 #include "my_commands.h"
+#include "installed_programs.h"
 
 using namespace std;
 using json = nlohmann::json;
