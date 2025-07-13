@@ -105,7 +105,7 @@ void output_thread() {
                 MuteOtherApplications();
                 QMetaObject::invokeMethod(&controller, "toggleAnimation", Qt::QueuedConnection, 
                              Q_ARG(bool, true));
-                if (get_word(last_text, -1).find("джарв") != string::npos){
+                if (get_word(last_text, -1).find("джарв") != string::npos || get_word(last_text, -1).find("джерв") != string::npos) {
                     play_pending = true;
                 }
                 play_status = false;
@@ -114,7 +114,7 @@ void output_thread() {
                 jarvis_text = last_text;
                 cout << endl << jarvis_text << endl;
                 pending_audio_path = "greet/" + (string)randomizer({"1", "2"});
-            } else if (last_text.find("джарв") == string::npos && play_pending) {
+            } else if ((last_text.find("джарв") == string::npos || last_text.find("джерв") == string::npos) && play_pending) {
                 play_pending = false;
             }
         }
@@ -127,7 +127,7 @@ void output_thread() {
                 thread(playAudio, pending_audio_path).detach();
                 play_pending = false;
                 play_status = true;
-            } else if (last_text != jarvis_text || get_word(last_text, -1).find("джарв") == string::npos) {
+            } else if (last_text != jarvis_text || get_word(last_text, -1).find("джарв") == string::npos || get_word(last_text, -1).find("джерв") == string::npos) {
                 play_pending = false;
             }
         }
@@ -143,7 +143,7 @@ void output_thread() {
         auto elapsed_ms_text = duration_cast<milliseconds>(now - last_change_text_time).count();
 
         if (elapsed_ms >= silence_timeout && !last_text.empty() && elapsed_ms_text >= 700) {
-            if (last_text.find("джарв") != string::npos && get_word(last_text, -1).find("джарв") == string::npos) {
+            if ((last_text.find("джарв") != string::npos && get_word(last_text, -1).find("джарв") == string::npos) || last_text.find("джерв") != string::npos && get_word(last_text, -1).find("джерв") == string::npos) {
                 cout << endl << last_text << endl;
                 thread execution = thread(command_execution, last_text);
                 execution.detach();

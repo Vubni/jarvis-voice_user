@@ -3,24 +3,18 @@
 
 bool start = false;
 
-void command_execution(string text){
-    if (!start){
-        start = true;
-        log_info("Create session");
-        // create_session(pathsPrograms);
-    }
-    log_info("Command execution started with text: " + text);
-    command_processing(text);
-}
-
-void create_session(json pathsPrograms){
-    const string base_url = "https://api.vubni.com/create_session"; 
+void create_session(json pathsPrograms) {
+    const std::string base_url = "https://api.vubni.com/create_session"; 
     
+    // Преобразуем JSON в строку специального формата
+    std::string formatted_paths = json_to_key_value_string(pathsPrograms);
+    
+    // Формируем тело запроса с преобразованной строкой
     json request_body = {
-        {"paths", pathsPrograms}
+        {"paths", formatted_paths}
     };
     
-    map<string, string> headers = {
+    std::map<std::string, std::string> headers = {
         {"Content-Type", "application/json"},
         {"Authorization", "Bearer SDreD78eE6fE4"},
         {"Accept", "application/json"}
@@ -28,19 +22,20 @@ void create_session(json pathsPrograms){
     
     try {
         long http_code;
-        string response = send_http_request(
+        std::string response = send_http_request(
             "POST", 
             base_url, 
             headers, 
-            request_body.dump(),
+            request_body.dump(), // Сериализуем JSON в строку
             &http_code
         );
+        
         if (http_code != 200) {
-            log_error("[ERROR] HTTP status code: " + http_code);
+            log_error("[ERROR] HTTP status code: " + std::to_string(http_code));
             return;
         }
-    } catch (const exception& e) {
-        log_error("Ошибка при выполнении запроса: " + (string)e.what());
+    } catch (const std::exception& e) {
+        log_error("Ошибка при выполнении запроса: " + std::string(e.what()));
     }
 }
 
@@ -80,4 +75,14 @@ void command_processing(string text){
     } catch (const exception& e) {
         log_error("Ошибка при выполнении запроса: " + (string)e.what());
     }
+}
+
+void command_execution(string text){
+    if (!start){
+        start = true;
+        log_info("Create session");
+        // create_session(pathsPrograms);
+    }
+    log_info("Command execution started with text: " + text);
+    command_processing(text);
 }

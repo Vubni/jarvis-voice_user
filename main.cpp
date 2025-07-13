@@ -56,7 +56,7 @@ int main(int argc, char *argv[]) {
 
     mainCommands();
 
-    VoskModel* model = vosk_model_new("./models/vosk-big");
+    VoskModel* model = vosk_model_new("./models/small");
     if (!model) {
         cerr << "Failed to load Vosk model" << endl;
         return -1;

@@ -8,6 +8,9 @@
 #include <stdexcept>
 #include <sstream>
 #include <vector>
+#include <nlohmann/json.hpp>
+
+using json = nlohmann::json;
 
 // Перемещаем реализацию шаблонной функции в заголовок
 template <typename T>
@@ -27,5 +30,6 @@ T randomizer(std::initializer_list<T> options) {
 
 std::string toLower(const std::string& input);
 std::string get_word(const std::string& str, int n);
+std::string json_to_key_value_string(const json& data);
 
 #endif // CORE_H_

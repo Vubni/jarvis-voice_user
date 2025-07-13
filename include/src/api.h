@@ -6,6 +6,7 @@
 #include <nlohmann/json.hpp>
 #include "http_client.h"
 #include "logger.h"
+#include "core.h"
 #include "my_commands.h"
 
 using namespace std;

@@ -1,6 +1,44 @@
 #include "core.h"
 using namespace std;
 
+string json_to_key_value_string(const json& data) {
+    std::string result;
+    
+    if (data.is_object()) {
+        for (auto& el : data.items()) {
+            // Обработка значения в зависимости от типа
+            std::string value_str;
+            if (el.value().is_string()) {
+                value_str = el.value().get<std::string>();
+            } else {
+                value_str = el.value().dump();
+            }
+            result += el.key() + " | " + value_str + "\n";
+        }
+    } 
+    else if (data.is_array()) {
+        for (size_t i = 0; i < data.size(); ++i) {
+            std::string value_str;
+            if (data[i].is_string()) {
+                value_str = data[i].get<std::string>();
+            } else {
+                value_str = data[i].dump();
+            }
+            result += std::to_string(i) + " | " + value_str + "\n";
+        }
+    } 
+    else {
+        // Обработка примитивных типов
+        if (data.is_string()) {
+            result = "value | " + data.get<std::string>();
+        } else {
+            result = "value | " + data.dump();
+        }
+    }
+    
+    return result;
+}
+
 std::string toLower(const std::string& input) {
     std::string result;
     result.reserve(input.size());
