@@ -43,7 +43,7 @@ std::wstring GetUserStartMenuPath() {
     return L"";
 }
 
-void ProcessLnkFile(const std::wstring& basePath, const std::wstring& lnkPath, nlohmann::json& result) {
+void ProcessLnkFile(const std::wstring& basePath, const std::wstring& lnkPath, nlohmann::json& result, bool filter) {
     IShellLinkW* psl = nullptr;
     IPersistFile* ppf = nullptr;
 
@@ -61,19 +61,25 @@ void ProcessLnkFile(const std::wstring& basePath, const std::wstring& lnkPath, n
         wchar_t targetPath[MAX_PATH] = {0};
         wchar_t arguments[MAX_PATH] = {0};
         
-        // Получаем путь к исполняемому файлу
         if (SUCCEEDED(psl->GetPath(targetPath, MAX_PATH, NULL, SLGP_RAWPATH))) {
-            // Получаем аргументы командной строки
             psl->GetArguments(arguments, MAX_PATH);
             
-            // Формируем полную команду запуска
+            // Фильтрация цели для .lnk (только если включен фильтр)
+            if (filter) {
+                std::wstring targetExt = PathFindExtensionW(targetPath);
+                if (targetExt.empty() || _wcsicmp(targetExt.c_str(), L".exe") != 0) {
+                    ppf->Release();
+                    psl->Release();
+                    return;
+                }
+            }
+            
             std::wstring fullCommand = targetPath;
             if (wcslen(arguments) > 0) {
                 fullCommand += L" ";
                 fullCommand += arguments;
             }
             
-            // Формируем имя программы (относительный путь без .lnk)
             std::wstring relPath = lnkPath.substr(basePath.length() + 1);
             size_t dotPos = relPath.find_last_of(L'.');
             if (dotPos != std::wstring::npos && _wcsicmp(relPath.substr(dotPos).c_str(), L".lnk") == 0) {
@@ -83,7 +89,6 @@ void ProcessLnkFile(const std::wstring& basePath, const std::wstring& lnkPath, n
             std::string utf8Name = WStringToUTF8(relPath.c_str());
             std::string utf8Command = WStringToUTF8(fullCommand.c_str());
             
-            // Если цель - валидный файл, добавляем в результат
             DWORD attrs = GetFileAttributesW(targetPath);
             if (attrs != INVALID_FILE_ATTRIBUTES) {
                 result[utf8Name] = utf8Command;
@@ -94,7 +99,7 @@ void ProcessLnkFile(const std::wstring& basePath, const std::wstring& lnkPath, n
     psl->Release();
 }
 
-void ScanDirectory(const std::wstring& basePath, const std::wstring& currentPath, nlohmann::json& result) {
+void ScanDirectory(const std::wstring& basePath, const std::wstring& currentPath, nlohmann::json& result, bool filter) {
     WIN32_FIND_DATAW findData;
     std::wstring searchPath = currentPath + L"\\*";
 
@@ -108,23 +113,28 @@ void ScanDirectory(const std::wstring& basePath, const std::wstring& currentPath
         std::wstring fullPath = currentPath + L"\\" + findData.cFileName;
 
         if (findData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) {
-            ScanDirectory(basePath, fullPath, result);
+            ScanDirectory(basePath, fullPath, result, filter);
         } else {
-            // Обрабатываем только ярлыки и EXE-файлы
-            if (PathMatchSpecW(findData.cFileName, L"*.lnk") || 
-                PathMatchSpecW(findData.cFileName, L"*.exe")) {
-                
-                // Для EXE-файлов добавляем напрямую
-                if (PathMatchSpecW(findData.cFileName, L"*.exe")) {
-                    std::wstring relPath = fullPath.substr(basePath.length() + 1);
-                    std::string utf8Name = WStringToUTF8(relPath.c_str());
-                    std::string utf8Path = WStringToUTF8(fullPath.c_str());
-                    result[utf8Name] = utf8Path;
-                } 
-                // Для ярлыков обрабатываем через функцию
-                else {
-                    ProcessLnkFile(basePath, fullPath, result);
-                }
+            bool isExe = PathMatchSpecW(findData.cFileName, L"*.exe");
+            bool isLnk = PathMatchSpecW(findData.cFileName, L"*.lnk");
+            
+            if (filter && !isExe && !isLnk) {
+                continue; // Пропускаем не .exe/.lnk при фильтрации
+            }
+
+            if (isExe) {
+                std::wstring relPath = fullPath.substr(basePath.length() + 1);
+                std::string utf8Name = WStringToUTF8(relPath.c_str());
+                std::string utf8Path = WStringToUTF8(fullPath.c_str());
+                result[utf8Name] = utf8Path;
+            } else if (isLnk) {
+                ProcessLnkFile(basePath, fullPath, result, filter);
+            } else if (!filter) {
+                // Добавляем все остальные файлы при отключенной фильтрации
+                std::wstring relPath = fullPath.substr(basePath.length() + 1);
+                std::string utf8Name = WStringToUTF8(relPath.c_str());
+                std::string utf8Path = WStringToUTF8(fullPath.c_str());
+                result[utf8Name] = utf8Path;
             }
         }
     } while (FindNextFileW(hFind, &findData));
@@ -134,7 +144,7 @@ void ScanDirectory(const std::wstring& basePath, const std::wstring& currentPath
 
 } // namespace
 
-nlohmann::json InstalledPrograms::GetInstalledPrograms() {
+nlohmann::json InstalledPrograms::GetInstalledPrograms(bool filter) {
     nlohmann::json result = nlohmann::json::object();
 
     HRESULT hr = CoInitializeEx(NULL, COINIT_APARTMENTTHREADED);
@@ -147,7 +157,7 @@ nlohmann::json InstalledPrograms::GetInstalledPrograms() {
 
     for (const auto& path : startMenuPaths) {
         if (!path.empty()) {
-            ScanDirectory(path, path, result);
+            ScanDirectory(path, path, result, filter);
         }
     }
 

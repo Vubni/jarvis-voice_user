@@ -5,7 +5,7 @@
 #include <string>
 
 namespace InstalledPrograms {
-    nlohmann::json GetInstalledPrograms();
+    nlohmann::json GetInstalledPrograms(bool filter=true);
 }
 
 #endif // INSTALLED_PROGRAMS_H

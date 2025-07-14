@@ -10,6 +10,11 @@
 #include <QDebug>
 #include <QScreen>
 
+// Добавляем поддержку WinAPI для Windows
+#ifdef Q_OS_WIN
+#include <windows.h>
+#endif
+
 class GradientWidget : public QWidget {
     Q_OBJECT
 
@@ -22,16 +27,17 @@ public:
         // Критические атрибуты окна
         setAttribute(Qt::WA_TranslucentBackground);
         setAttribute(Qt::WA_TransparentForMouseEvents);
-        setAttribute(Qt::WA_ShowWithoutActivating); // Предотвращает активацию окна
-        setAttribute(Qt::WA_X11DoNotAcceptFocus);   // Для X11
-        setAttribute(Qt::WA_MacAlwaysShowToolWindow); // Для macOS совместимость
+        setAttribute(Qt::WA_ShowWithoutActivating);
+        setAttribute(Qt::WA_X11DoNotAcceptFocus);
+        setAttribute(Qt::WA_MacAlwaysShowToolWindow);
 
         // Комбинированные флаги окна
         setWindowFlags(
             Qt::FramelessWindowHint |
             Qt::WindowStaysOnTopHint |
-            Qt::ToolTip |               // Скрывает из панели задач и Alt+Tab
-            Qt::WindowDoesNotAcceptFocus // Предотвращает фокусировку
+            Qt::ToolTip |
+            Qt::WindowDoesNotAcceptFocus |
+            Qt::BypassWindowManagerHint  // Критично для режима поверх игр
         );
 
         // Отладка геометрии
@@ -43,22 +49,35 @@ public:
         timer->start(30);
     }
 
+#ifdef Q_OS_WIN
+    // Переопределяем событие отображения для Windows
+    void showEvent(QShowEvent *event) override {
+        QWidget::showEvent(event);
+        forceTopMost();
+    }
+
+    // Принудительная установка поверх всех окон
+    void forceTopMost() {
+        HWND hwnd = reinterpret_cast<HWND>(winId());
+        SetWindowPos(
+            hwnd,
+            HWND_TOPMOST,
+            0, 0, 0, 0,
+            SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE
+        );
+    }
+#endif
+
 protected:
     void paintEvent(QPaintEvent *) override {
-        // Проверка на пустую область
-        if (rect().isEmpty())
-            return;
+        if (rect().isEmpty()) return;
 
         QPainter painter(this);
-
         const int borderWidth = 1;
-
         qint64 elapsed = QTime::currentTime().msecsSinceStartOfDay();
         qreal time = elapsed / 1000.0;
-
         qreal angularSpeed = 2 * M_PI / 10;
         qreal theta = angularSpeed * time;
-
         qreal cx = width() / 2.0;
         qreal cy = height() / 2.0;
         qreal R = qSqrt(cx * cx + cy * cy) + 100;
@@ -88,23 +107,27 @@ protected:
     }
 };
 
-// Статический указатель на экземпляр виджета
 namespace {
     GradientWidget* animationWidget = nullptr;
 }
 
 extern "C" {
     void OnAnimation() {
-        // Проверяем, существует ли QApplication
         if (!QApplication::instance()) {
             qWarning() << "QApplication must be initialized before calling OnAnimation.";
             return;
         }
 
-        // Создаем и показываем виджет
         if (!animationWidget) {
             animationWidget = new GradientWidget();
             animationWidget->show();
+            
+            // Для Windows: дополнительная синхронизация
+            #ifdef Q_OS_WIN
+                QCoreApplication::processEvents();
+                animationWidget->forceTopMost();
+            #endif
+            
             animationWidget->update();
         }
     }
@@ -114,7 +137,7 @@ extern "C" {
             animationWidget->hide();
             animationWidget->deleteLater();
             animationWidget = nullptr;
-            QApplication::processEvents(); // Обработка отложенных событий
+            QApplication::processEvents();
         }
     }
 }

@@ -24,15 +24,27 @@
 #include <QThread>
 #include "gradientwidget.h"
 #include "animationcontroller.h"
+#include "WindowLister.h"
+
+#include "app_launcher.h"
 
 using namespace std;
 using namespace std::chrono;
 using json = nlohmann::json;
 
 AnimationController controller;
+QWidget* globalMainWindow = nullptr;
 
 int main(int argc, char *argv[]) {
     QApplication app(argc, argv);
+    app.setQuitOnLastWindowClosed(false);
+
+    log_info("Starting Jarvis Voice application...");
+    globalMainWindow = createMainWindow();
+    if (!globalMainWindow) {
+        return -1;
+    }
+    globalMainWindow->show();
 
     QObject::connect(&controller, &AnimationController::toggleAnimation, 
                     [&](bool isActive) {
@@ -47,7 +59,6 @@ int main(int argc, char *argv[]) {
     SetConsoleCP(CP_UTF8);
 
     if (!filesystem::exists("logs")) filesystem::create_directory("logs");
-    if (!filesystem::exists("audio_chunks")) filesystem::create_directory("audio_chunks");
 
     error_log_file.open("logs/error.log", ios_base::app);
     if (error_log_file.is_open()) {
@@ -60,6 +71,13 @@ int main(int argc, char *argv[]) {
     nlohmann::json pathsPrograms = InstalledPrograms::GetInstalledPrograms();
     create_session(pathsPrograms);
     log_info("Successful Create session.");
+
+    vector<HWND> temp = GetActiveWindows();
+    char title[256];
+    for (HWND hwnd : temp) {
+        GetWindowTextA(hwnd, title, sizeof(title));
+        printf("HWND: 0x%p, Заголовок: %s\n", hwnd, title);
+    }
 
     VoskModel* model = vosk_model_new("./models/small");
     if (!model) {

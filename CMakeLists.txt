@@ -36,7 +36,7 @@ set(JSON_BuildTests OFF CACHE INTERNAL "")
 add_subdirectory(nlohmann_json)
 
 
-find_package(Qt6 REQUIRED COMPONENTS Core Gui Widgets)
+find_package(Qt6 REQUIRED COMPONENTS UiTools Core Gui Widgets)
 
 
 file(GLOB SCRIPT_SOURCES "scripts/*.cpp")
@@ -71,6 +71,7 @@ SDL2 SDL2_mixer
 Qt::Core
 Qt::Gui
 Qt::Widgets
+Qt::UiTools
 ucrt.lib
 vcruntime.lib
 msvcrt.lib
