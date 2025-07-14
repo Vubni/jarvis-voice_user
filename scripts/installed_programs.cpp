@@ -43,62 +43,6 @@ std::wstring GetUserStartMenuPath() {
     return L"";
 }
 
-void ProcessLnkFile(const std::wstring& basePath, const std::wstring& lnkPath, nlohmann::json& result, bool filter) {
-    IShellLinkW* psl = nullptr;
-    IPersistFile* ppf = nullptr;
-
-    HRESULT hr = CoCreateInstance(CLSID_ShellLink, NULL, CLSCTX_INPROC_SERVER, IID_IShellLinkW, (void**)&psl);
-    if (FAILED(hr)) return;
-
-    hr = psl->QueryInterface(IID_IPersistFile, (void**)&ppf);
-    if (FAILED(hr)) {
-        psl->Release();
-        return;
-    }
-
-    hr = ppf->Load(lnkPath.c_str(), STGM_READ);
-    if (SUCCEEDED(hr)) {
-        wchar_t targetPath[MAX_PATH] = {0};
-        wchar_t arguments[MAX_PATH] = {0};
-        
-        if (SUCCEEDED(psl->GetPath(targetPath, MAX_PATH, NULL, SLGP_RAWPATH))) {
-            psl->GetArguments(arguments, MAX_PATH);
-            
-            // Фильтрация цели для .lnk (только если включен фильтр)
-            if (filter) {
-                std::wstring targetExt = PathFindExtensionW(targetPath);
-                if (targetExt.empty() || _wcsicmp(targetExt.c_str(), L".exe") != 0) {
-                    ppf->Release();
-                    psl->Release();
-                    return;
-                }
-            }
-            
-            std::wstring fullCommand = targetPath;
-            if (wcslen(arguments) > 0) {
-                fullCommand += L" ";
-                fullCommand += arguments;
-            }
-            
-            std::wstring relPath = lnkPath.substr(basePath.length() + 1);
-            size_t dotPos = relPath.find_last_of(L'.');
-            if (dotPos != std::wstring::npos && _wcsicmp(relPath.substr(dotPos).c_str(), L".lnk") == 0) {
-                relPath = relPath.substr(0, dotPos);
-            }
-
-            std::string utf8Name = WStringToUTF8(relPath.c_str());
-            std::string utf8Command = WStringToUTF8(fullCommand.c_str());
-            
-            DWORD attrs = GetFileAttributesW(targetPath);
-            if (attrs != INVALID_FILE_ATTRIBUTES) {
-                result[utf8Name] = utf8Command;
-            }
-        }
-    }
-    ppf->Release();
-    psl->Release();
-}
-
 void ScanDirectory(const std::wstring& basePath, const std::wstring& currentPath, nlohmann::json& result, bool filter) {
     WIN32_FIND_DATAW findData;
     std::wstring searchPath = currentPath + L"\\*";
@@ -119,21 +63,22 @@ void ScanDirectory(const std::wstring& basePath, const std::wstring& currentPath
             bool isLnk = PathMatchSpecW(findData.cFileName, L"*.lnk");
             
             if (filter && !isExe && !isLnk) {
-                continue; // Пропускаем не .exe/.lnk при фильтрации
+                continue; // Skip non .exe/.lnk when filtering
             }
 
-            if (isExe) {
-                std::wstring relPath = fullPath.substr(basePath.length() + 1);
-                std::string utf8Name = WStringToUTF8(relPath.c_str());
-                std::string utf8Path = WStringToUTF8(fullPath.c_str());
+            std::wstring relPath = fullPath.substr(basePath.length() + 1);
+            std::string utf8Name = WStringToUTF8(relPath.c_str());
+            std::string utf8Path = WStringToUTF8(fullPath.c_str());
+
+            if (isLnk) {
+                // Remove .lnk extension for key name
+                size_t dotPos = relPath.find_last_of(L'.');
+                if (dotPos != std::wstring::npos && _wcsicmp(relPath.substr(dotPos).c_str(), L".lnk") == 0) {
+                    std::wstring withoutExt = relPath.substr(0, dotPos);
+                    utf8Name = WStringToUTF8(withoutExt.c_str());
+                }
                 result[utf8Name] = utf8Path;
-            } else if (isLnk) {
-                ProcessLnkFile(basePath, fullPath, result, filter);
-            } else if (!filter) {
-                // Добавляем все остальные файлы при отключенной фильтрации
-                std::wstring relPath = fullPath.substr(basePath.length() + 1);
-                std::string utf8Name = WStringToUTF8(relPath.c_str());
-                std::string utf8Path = WStringToUTF8(fullPath.c_str());
+            } else if (isExe || !filter) {
                 result[utf8Name] = utf8Path;
             }
         }

@@ -27,7 +27,9 @@ void output_thread();
 void audio_record_thread(pv_recorder_t* recorder);
 
 // Управление распознаванием
-void start_speech_recognition(VoskRecognizer* recognizer, pv_recorder_t* recorder);
+void start_speech_recognition(pv_recorder_t* recorder, 
+                              VoskRecognizer* recognizer_ru, 
+                              VoskRecognizer* recognizer_en = nullptr);
 void stop_speech_recognition();
 
 #endif // SPEECH_RECOGNITION_H

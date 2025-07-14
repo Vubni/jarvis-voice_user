@@ -35,6 +35,11 @@ using json = nlohmann::json;
 AnimationController controller;
 QWidget* globalMainWindow = nullptr;
 
+VoskModel* model;
+VoskModel* model_en;
+VoskRecognizer* recognizer;
+VoskRecognizer* recognizer_en;
+
 int main(int argc, char *argv[]) {
     QApplication app(argc, argv);
     app.setQuitOnLastWindowClosed(false);
@@ -69,8 +74,12 @@ int main(int argc, char *argv[]) {
 
     log_info("Create session..");
     nlohmann::json pathsPrograms = InstalledPrograms::GetInstalledPrograms();
-    create_session(pathsPrograms);
-    log_info("Successful Create session.");
+    bool result = create_session(pathsPrograms);
+    if (result){
+        log_info("Successful Create session.");
+    } else {
+        log_error("Failed to create session. Program will exit.");
+    }
 
     vector<HWND> temp = GetActiveWindows();
     char title[256];
@@ -79,32 +88,49 @@ int main(int argc, char *argv[]) {
         printf("HWND: 0x%p, Заголовок: %s\n", hwnd, title);
     }
 
-    VoskModel* model = vosk_model_new("./models/small");
-    if (!model) {
-        cerr << "Failed to load Vosk model" << endl;
-        return -1;
+    {
+        log_info("Create RU model..");
+        model = vosk_model_new("./models/small");
+        if (!model) {
+            cerr << "Failed to load Vosk model" << endl;
+            return -1;
+        }
+
+        recognizer = vosk_recognizer_new(model, 16000.0f);
+        vosk_recognizer_set_max_alternatives(recognizer, 0);
     }
 
-    VoskRecognizer* recognizer = vosk_recognizer_new(model, 16000.0f);
-    vosk_recognizer_set_max_alternatives(recognizer, 0);
+    {
+        log_info("Create EN model..");
+        model_en = vosk_model_new("./models/small_en");
+        if (!model_en) {
+            cerr << "Failed to load Vosk model" << endl;
+            return -1;
+        }
+
+        recognizer_en = vosk_recognizer_new(model_en, 16000.0f);
+        vosk_recognizer_set_max_alternatives(recognizer_en, 0);
+    }
 
     pv_recorder_t* recorder = nullptr;
     if (pv_recorder_init(512, -1, 5, &recorder) != PV_RECORDER_STATUS_SUCCESS) {
         cerr << "PvRecorder init error" << endl;
         vosk_model_free(model);
+        vosk_model_free(model_en);
         return -1;
     }
     if (pv_recorder_start(recorder) != PV_RECORDER_STATUS_SUCCESS) {
         cerr << "Recording start error" << endl;
         pv_recorder_delete(recorder);
         vosk_model_free(model);
+        vosk_model_free(model_en);
         return -1;
     }
 
     cout << "Recording started... Speak into the microphone. Press Ctrl+C to exit." << endl;
 
     // Запуск потоков распознавания
-    start_speech_recognition(recognizer, recorder);
+    start_speech_recognition(recorder, recognizer, recognizer_en);
 
     int qt_result = app.exec();
 
@@ -113,7 +139,9 @@ int main(int argc, char *argv[]) {
     pv_recorder_stop(recorder);
     pv_recorder_delete(recorder);
     vosk_recognizer_free(recognizer);
+    vosk_recognizer_free(recognizer_en);
     vosk_model_free(model);
+    vosk_model_free(model_en);
 
     if (error_log_file.is_open()) {
         log_error("Application terminated");

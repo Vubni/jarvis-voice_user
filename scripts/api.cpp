@@ -1,13 +1,12 @@
 #include "api.h"
 #include <vector>
 
-void create_session(json pathsPrograms) {
+bool create_session(json pathsPrograms) {
     const std::string base_url = "https://api.vubni.com/create_session"; 
     
     // Преобразуем JSON в строку специального формата
     std::string formatted_paths = json_to_key_value_string(pathsPrograms);
     cout << "Formatted paths: " << formatted_paths << endl;
-    return;
     
     // Формируем тело запроса с преобразованной строкой
     json request_body = {
@@ -32,8 +31,9 @@ void create_session(json pathsPrograms) {
         
         if (http_code != 200) {
             log_error("[ERROR] HTTP status code: " + std::to_string(http_code));
-            return;
+            return false;
         }
+        return true;
     } catch (const std::exception& e) {
         log_error("Ошибка при выполнении запроса: " + std::string(e.what()));
     }
@@ -77,7 +77,7 @@ void command_processing(string text){
     }
 }
 
-void command_execution(string text){
-    log_info("Command execution started with text: " + text);
-    command_processing(text);
+void command_execution(string text_ru, string text_en) {
+    log_info("Command execution started with text: RU: " + text_ru + "| EN: " + text_en);
+    command_processing(text_ru);
 }

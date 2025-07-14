@@ -17,15 +17,20 @@ using namespace std::chrono;
 using json = nlohmann::json;
 
 // Определение глобальных переменных
-std::string recognized_text;
+std::string recognized_text;      // Русский текст
+std::string recognized_text_en;   // Английский текст
 std::mutex text_mutex;
 std::string last_text;
 
-std::queue<std::vector<int16_t>> audio_queue;
-std::mutex queue_mutex;
-std::condition_variable queue_cv;
+std::queue<std::vector<int16_t>> audio_queue_ru;
+std::queue<std::vector<int16_t>> audio_queue_en;
+std::mutex queue_ru_mutex;
+std::mutex queue_en_mutex;
+std::condition_variable queue_ru_cv;
+std::condition_variable queue_en_cv;
 std::atomic<bool> stop_flag(false);
 std::atomic<bool> reset_request(false);
+std::atomic<bool> reset_request_en(false);
 
 // Внешние зависимости
 extern AnimationController controller;
@@ -34,52 +39,90 @@ void recognition_thread(VoskRecognizer* recognizer) {
     while (!stop_flag) {
         vector<int16_t> audio_data;
         try {
-            unique_lock<mutex> lock(queue_mutex);
-            queue_cv.wait(lock, [&]{ 
-                return !audio_queue.empty() || stop_flag || reset_request; 
+            unique_lock<mutex> lock(queue_ru_mutex);
+            queue_ru_cv.wait(lock, [&]{ 
+                return !audio_queue_ru.empty() || stop_flag || reset_request; 
             });
 
-            if (stop_flag && audio_queue.empty()) return;
-
+            if (stop_flag) return;
             if (reset_request) {
                 vosk_recognizer_reset(recognizer);
-                reset_request = false;
-                
-                queue<vector<int16_t>> empty_queue;
-                audio_queue.swap(empty_queue);
+                audio_queue_ru = {};
 
                 recognized_text.clear();
                 last_text.clear();
+                reset_request=false;
                 continue;
             }
 
-            if (!audio_queue.empty()) {
-                audio_data = move(audio_queue.front());
-                audio_queue.pop();
+            if (!audio_queue_ru.empty()) {
+                audio_data = std::move(audio_queue_ru.front());
+                audio_queue_ru.pop();
             }
         } catch (const exception& e){
-            log_error("Recognition thread error: " + string(e.what()));
+            log_error("RU recognition error: " + string(e.what()));
         }
 
+        // Обработка аудиоданных
         if (!audio_data.empty()) {
-            int num_samples = static_cast<int>(audio_data.size());
-            vosk_recognizer_accept_waveform_s(recognizer, audio_data.data(), num_samples);
-
-            const char* partial_result = vosk_recognizer_partial_result(recognizer);
-            try {
-                json j = json::parse(partial_result);
-                string text = j["partial"];
-
-                if (!text.empty()) {
+            vosk_recognizer_accept_waveform_s(recognizer, audio_data.data(), static_cast<int>(audio_data.size()));
+            
+            if (const char* partial = vosk_recognizer_partial_result(recognizer)) {
+                try {
                     lock_guard<mutex> lock(text_mutex);
-                    recognized_text = text;
+                    recognized_text = json::parse(partial)["partial"];
+                } catch (const exception& e) {
+                    log_error("RU JSON error: " + string(e.what()));
                 }
-            } catch (const exception& e) {
-                log_error("JSON parsing error: " + string(e.what()));
             }
         }
     }
 }
+
+void recognition_en_thread(VoskRecognizer* recognizer) {
+    while (!stop_flag) {
+        vector<int16_t> audio_data;
+        try {
+            unique_lock<mutex> lock(queue_en_mutex);
+            queue_en_cv.wait(lock, [&]{ 
+                return !audio_queue_en.empty() || stop_flag || reset_request; 
+            });
+
+            if (stop_flag) return;
+            if (reset_request_en) {
+                vosk_recognizer_reset(recognizer);
+                audio_queue_en = {};
+
+                recognized_text_en.clear();
+                reset_request_en=false;
+                continue;
+            }
+
+            if (!audio_queue_en.empty()) {
+                audio_data = std::move(audio_queue_en.front());
+                audio_queue_en.pop();
+            }
+        } catch (const exception& e){
+            log_error("EN recognition error: " + string(e.what()));
+        }
+
+        // Обработка аудиоданных
+        if (!audio_data.empty()) {
+            vosk_recognizer_accept_waveform_s(recognizer, audio_data.data(), static_cast<int>(audio_data.size()));
+            
+            if (const char* partial = vosk_recognizer_partial_result(recognizer)) {
+                try {
+                    lock_guard<mutex> lock(text_mutex);
+                    recognized_text_en = json::parse(partial)["partial"];
+                } catch (const exception& e) {
+                    log_error("EN JSON error: " + string(e.what()));
+                }
+            }
+        }
+    }
+}
+
+
 
 bool contains_jarvis(const string& text) {
     return text.find("джарв") != string::npos || text.find("джерв") != string::npos;
@@ -150,21 +193,27 @@ void output_thread() {
         auto elapsed_ms_text = duration_cast<milliseconds>(now - last_change_text_time).count();
 
         if (elapsed_ms >= silence_timeout && !last_text.empty() && elapsed_ms_text >= 700) {
-            if ((last_text.find("джарв") != string::npos && get_word(last_text, -1).find("джарв") == string::npos) || last_text.find("джерв") != string::npos && get_word(last_text, -1).find("джерв") == string::npos) {
-                thread execution = thread(command_execution, last_text);
+            if (contains_jarvis(last_text) && !is_last_word_jarvis(last_text)) {
+                thread execution = thread(command_execution, last_text, recognized_text_en);
                 execution.detach();
             }
 
             status = true;
             play_status = false;
             reset_request = true;
-            queue_cv.notify_one();
-            RestoreApplicationVolumes();
-            QMetaObject::invokeMethod(&controller, "toggleAnimation", Qt::QueuedConnection, 
-                             Q_ARG(bool, false));
-            this_thread::sleep_for(95ms);  // Исправлено: стандартная задержка
+            reset_request_en = true;
+            // Нотифицируем потоки распознавания
+            queue_ru_cv.notify_all();
+            queue_en_cv.notify_all();
             recognized_text.clear();
             last_text.clear();
+
+            RestoreApplicationVolumes();
+            QMetaObject::invokeMethod(&controller, "toggleAnimation", Qt::QueuedConnection, 
+                            Q_ARG(bool, false));
+            
+            this_thread::sleep_for(95ms);
+            reset_request = false;  // Сброс флага после обработки
         }
     }
 }
@@ -174,27 +223,38 @@ void audio_record_thread(pv_recorder_t* recorder) {
     while (!stop_flag) {
         vector<int16_t> audio_buffer(512);
         if (pv_recorder_read(recorder, audio_buffer.data()) == PV_RECORDER_STATUS_SUCCESS) {
+            // Отправка в обе очереди
             {
-                lock_guard<mutex> lock(queue_mutex);
-                audio_queue.push(audio_buffer);
+                lock_guard<mutex> lock_ru(queue_ru_mutex);
+                audio_queue_ru.push(audio_buffer);
             }
-            queue_cv.notify_one();
+            queue_ru_cv.notify_one();
+            
+            {
+                lock_guard<mutex> lock_en(queue_en_mutex);
+                audio_queue_en.push(audio_buffer);
+            }
+            queue_en_cv.notify_one();
         }
-        this_thread::sleep_for(chrono::milliseconds(10));
+        this_thread::sleep_for(10ms);
     }
 }
-
-void start_speech_recognition(VoskRecognizer* recognizer, pv_recorder_t* recorder) {
-    thread audio_thread(audio_record_thread, recorder);
-    thread rec_thread(recognition_thread, recognizer);
-    thread out_thread(output_thread);
-
-    audio_thread.detach();
-    rec_thread.detach();
-    out_thread.detach();
+void start_speech_recognition(pv_recorder_t* recorder, 
+                              VoskRecognizer* recognizer_ru, 
+                              VoskRecognizer* recognizer_en) 
+{
+    thread(audio_record_thread, recorder).detach();
+    thread(recognition_thread, recognizer_ru).detach();
+    
+    if (recognizer_en) {
+        thread(recognition_en_thread, recognizer_en).detach();
+    }
+    
+    thread(output_thread).detach();
 }
 
 void stop_speech_recognition() {
     stop_flag = true;
-    queue_cv.notify_all();
+    queue_ru_cv.notify_all();
+    queue_en_cv.notify_all();
 }
