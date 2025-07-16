@@ -49,7 +49,9 @@ qt6_wrap_cpp(MOC_SOURCES
 
 add_definitions(-D_CRT_SECURE_NO_WARNINGS -D_CRT_NONSTDC_NO_WARNINGS)
 
-add_executable(jarvis ${SOURCE_EXE} ${MOC_SOURCES})
+qt6_wrap_ui(UI_HEADERS main.ui)
+
+add_executable(jarvis ${SOURCE_EXE} ${MOC_SOURCES} ${UI_HEADERS})
 
 # if(MSVC)
 #     # Копирование CRT DLL
