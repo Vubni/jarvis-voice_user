@@ -27,11 +27,8 @@ void ScriptEngine::Execute(const std::string& script) {
             const std::vector<std::any>& defaults = func->GetDefaults();
             size_t needed = total_params - provided;
             for (size_t i = 0; i < needed; ++i) {
-                if (i < defaults.size()) {
-                    all_args.push_back(defaults[i]);
-                } else {
-                    throw std::runtime_error("Unexpected missing default value");
-                }
+                size_t default_index = defaults.size() - needed + i;
+                all_args.push_back(defaults[default_index]);
             }
             func->Call(all_args);
         }
@@ -98,6 +95,7 @@ std::vector<std::string> ScriptEngine::SplitArgs(const std::string& args_str) {
     std::vector<std::string> args;
     std::string current;
     bool in_quotes = false;
+    
     for (char c : args_str) {
         if (c == '"') {
             in_quotes = !in_quotes;
@@ -105,10 +103,12 @@ std::vector<std::string> ScriptEngine::SplitArgs(const std::string& args_str) {
         } else if (c == ',' && !in_quotes) {
             args.push_back(Trim(current));
             current.clear();
-        } else if (!std::isspace(static_cast<unsigned char>(c))) {
+        } else {
+            // Сохраняем ВСЕ символы (включая пробелы)
             current += c;
         }
     }
+    
     if (!current.empty()) {
         args.push_back(Trim(current));
     }
@@ -117,21 +117,23 @@ std::vector<std::string> ScriptEngine::SplitArgs(const std::string& args_str) {
 
 std::any ScriptEngine::ConvertArg(const std::string& arg_str) {
     std::string s = Trim(arg_str);
-    if (s.empty()) {
-        return {};
-    }
+    if (s.empty()) return ""; // Пустая строка
+
+    // Обработка строк в кавычках
     if ((s.front() == '"' && s.back() == '"') || (s.front() == '\'' && s.back() == '\'')) {
-        return std::string(s.substr(1, s.size() - 2));
+        return s.substr(1, s.size() - 2);
     }
-    if (toLower(s) == "true") {
-        return true;
-    } else if (toLower(s) == "false") {
-        return false;
-    }
+
+    // Булевые значения
+    if (toLower(s) == "true") return true;
+    if (toLower(s) == "false") return false;
+
+    // Числа
     try {
         return std::stoi(s);
-    } catch (const std::exception& e) {
-        std::cerr << "Error ConvertArg script: " << e.what() << std::endl;
+    } catch (...) {
+        // В случае ошибки - возвращаем как строку
+        return s; // Важно: возвращаем исходную строку
     }
 }
 

@@ -28,6 +28,8 @@
 
 #include "app_launcher.h"
 
+#include "ui_main.h"
+
 using namespace std;
 using namespace std::chrono;
 using json = nlohmann::json;

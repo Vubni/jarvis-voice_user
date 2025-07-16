@@ -194,8 +194,11 @@ void output_thread() {
 
         if (elapsed_ms >= silence_timeout && !last_text.empty() && elapsed_ms_text >= 700) {
             if (contains_jarvis(last_text) && !is_last_word_jarvis(last_text)) {
-                thread execution = thread(command_execution, last_text, recognized_text_en);
-                execution.detach();
+                try{
+                    command_execution(last_text, recognized_text_en);
+                } catch (const exception& e) {
+                    log_error("Command execution error: " + (string)e.what());
+                }
             }
 
             status = true;
@@ -209,11 +212,9 @@ void output_thread() {
             last_text.clear();
 
             RestoreApplicationVolumes();
+            this_thread::sleep_for(100ms);
             QMetaObject::invokeMethod(&controller, "toggleAnimation", Qt::QueuedConnection, 
                             Q_ARG(bool, false));
-            
-            this_thread::sleep_for(95ms);
-            reset_request = false;  // Сброс флага после обработки
         }
     }
 }

@@ -22,7 +22,8 @@ set(CMAKE_TOOLCHAIN_FILE
 # set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} /MANIFESTUAC:\"level='requireAdministrator' uiAccess='false'\"")
 include_directories(include 
                     include/vosk 
-                    include/src)
+                    include/src
+                    build)
 
 link_directories(${LIB_DIR})
 
