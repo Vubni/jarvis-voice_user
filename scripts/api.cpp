@@ -4,13 +4,9 @@
 bool create_session(json pathsPrograms) {
     const std::string base_url = "https://api.vubni.com/create_session"; 
     
-    // Преобразуем JSON в строку специального формата
-    std::string formatted_paths = json_to_key_value_string(pathsPrograms);
-    cout << "Formatted paths: " << formatted_paths << endl;
-    
     // Формируем тело запроса с преобразованной строкой
     json request_body = {
-        {"paths", formatted_paths}
+        {"paths", pathsPrograms}
     };
     
     std::map<std::string, std::string> headers = {

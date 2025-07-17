@@ -61,7 +61,7 @@ void NextWorkTable(){
 }
 
 void playAudioGreat(){
-    playAudio("success/" + (string)randomizer({"1", "2"}));
+    playAudio("success/" + (string)randomizer({"1", "2", "3"}));
 }
 
 namespace {
