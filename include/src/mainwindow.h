@@ -14,7 +14,8 @@ public:
     ~MainWindow();
 
     static MainWindow* instance() { return m_instance; }
-    void showWindow(); // Публичный метод для показа окна
+public slots:
+    void showWindow();
 
 protected:
     void closeEvent(QCloseEvent *event) override;

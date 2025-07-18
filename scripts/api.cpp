@@ -63,11 +63,8 @@ void command_processing(string text){
         }
         
         json result = json::parse(response);
-        string answer = result["answer"];
-        // Нужно добавить логику синтеза речи
-        cout << answer << endl;
-
-        execute_action(result["action"]);
+        if (result["answer"]) cout << result["answer"] << endl;
+        if (result["action"]) execute_action(result["action"]);
     } catch (const exception& e) {
         log_error("Ошибка при выполнении запроса: " + (string)e.what());
     }

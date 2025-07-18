@@ -14,6 +14,10 @@
 #include <QRegularExpression>
 #include <QMouseEvent>
 
+#include "mainwindow.h"
+
+extern MainWindow* globalMainWindow;
+
 QIcon createSvgIcon(const QString &path, int size) {
     QSvgRenderer renderer(path);
     QPixmap pixmap(size, size);
@@ -242,5 +246,8 @@ void CustomNotification::paintEvent(QPaintEvent* event)
 void showCustomNotification(const QString& title, const QString& message, int displayTime)
 {
     CustomNotification* notification = new CustomNotification(title, message, nullptr, displayTime);
+    QObject::connect(notification, &CustomNotification::clicked, []() {
+        QMetaObject::invokeMethod(globalMainWindow, "showWindow", Qt::QueuedConnection);
+    });
     notification->showNotification();
 }

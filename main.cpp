@@ -36,7 +36,7 @@ using namespace std::chrono;
 using json = nlohmann::json;
 
 AnimationController controller;
-QWidget* globalMainWindow = nullptr;
+MainWindow* globalMainWindow = nullptr;
 
 VoskModel* model;
 VoskModel* model_en;
