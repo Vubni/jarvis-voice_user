@@ -22,12 +22,14 @@
 
 #include <QApplication>
 #include <QThread>
+#include <QResource>
 #include "gradientwidget.h"
 #include "animationcontroller.h"
 #include "WindowLister.h"
-
 #include "app_launcher.h"
 #include "mainwindow.h"
+#include "TraySystem.h"
+#include <QtSvg>
 
 using namespace std;
 using namespace std::chrono;
@@ -101,11 +103,14 @@ int initialize(){
         vosk_model_free(model_en);
         return -1;
     }
+    return 0;
 }
 
 int main(int argc, char *argv[]) {
     QApplication app(argc, argv);
     app.setQuitOnLastWindowClosed(false);
+    Q_INIT_RESOURCE(resources);
+    // QResource::registerResource("resources.rcc");
 
     log_info("Starting Jarvis Voice application...");
     
@@ -115,7 +120,9 @@ int main(int argc, char *argv[]) {
         return -1;
     }
     mainWindow->show();
+    globalMainWindow = mainWindow;
 
+    log_info("Create controller to animation...");
     QObject::connect(&controller, &AnimationController::toggleAnimation, 
                     [&](bool isActive) {
         if (isActive) {
@@ -125,6 +132,13 @@ int main(int argc, char *argv[]) {
         }
     });
 
+    log_info("Create tray system...");
+    TraySystem tray;
+    tray.setup(&app);
+    tray.show();
+
+
+    log_info("Initialize Jarvis...");
     SetConsoleOutputCP(CP_UTF8);
     SetConsoleCP(CP_UTF8);
 

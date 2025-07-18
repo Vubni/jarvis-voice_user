@@ -1,5 +1,6 @@
 #include "command_processor.h"
 #include <cctype>
+#include <windows.h>
 
 ScriptEngine::ScriptEngine() {}
 ScriptEngine::~ScriptEngine() {}
@@ -31,6 +32,7 @@ void ScriptEngine::Execute(const std::string& script) {
                 all_args.push_back(defaults[default_index]);
             }
             func->Call(all_args);
+            if (&cmd != &commands.back()) Sleep(250); 
         }
     } catch (const std::exception& e) {
         std::cerr << "Error executing script: " << e.what() << std::endl;
