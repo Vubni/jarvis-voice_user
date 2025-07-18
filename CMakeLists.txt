@@ -64,6 +64,7 @@ qt6_wrap_cpp(MOC_SOURCES
     include/src/animationcontroller.h
     include/src/TraySystem.h
     include/src/CustomNotification.h
+    include/src/mainwindow.h
 )
 
 add_definitions(-D_CRT_SECURE_NO_WARNINGS -D_CRT_NONSTDC_NO_WARNINGS)

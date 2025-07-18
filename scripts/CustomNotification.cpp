@@ -12,6 +12,7 @@
 #include <QSvgRenderer>
 #include <QLinearGradient>
 #include <QRegularExpression>
+#include <QMouseEvent>
 
 QIcon createSvgIcon(const QString &path, int size) {
     QSvgRenderer renderer(path);
@@ -42,10 +43,12 @@ CustomNotification::CustomNotification(const QString& title,
             color: #FFFFFF;
             font-weight: bold;
             font-size: 15px;
+            margin-bottom: 2px;
         }
         QLabel#message {
             color: #E0E0E0;
             font-size: 14px;
+            margin-top: 0px;
         }
     )");
 
@@ -82,11 +85,32 @@ CustomNotification::CustomNotification(const QString& title,
     m_timer->start(effectiveDisplayTime);
 }
 
+void CustomNotification::mousePressEvent(QMouseEvent* event)
+{
+    if (event->button() == Qt::LeftButton) {
+        // 1. Останавливаем таймер автозакрытия
+        if (m_timer && m_timer->isActive()) {
+            m_timer->stop();
+        }
+        
+        // 2. Испускаем сигнал clicked()
+        emit clicked();
+        
+        // 3. Запускаем анимацию закрытия
+        closeNotification();
+    }
+    QWidget::mousePressEvent(event);
+}
+
+
 void CustomNotification::setupUI(const QString& title, const QString& message)
 {
     // Основной контейнер
     QWidget* container = new QWidget(this);
     container->setObjectName("container");
+    setCursor(Qt::PointingHandCursor);
+    
+    // Добавляем эффект при наведении в стили
     container->setStyleSheet(R"(
         #container {
             background: qlineargradient(
@@ -96,6 +120,13 @@ void CustomNotification::setupUI(const QString& title, const QString& message)
             );
             border-radius: 8px;
             border: 1px solid #3C3F45;
+        }
+        #container:hover {
+            background: qlineargradient(
+                x1:0, y1:0.5, x2:1, y2:0.5,
+                stop:0 #5A5E65, 
+                stop:1 #6A6E75
+            );
         }
     )");
     
@@ -136,7 +167,7 @@ void CustomNotification::setupUI(const QString& title, const QString& message)
     // Текстовый блок
     QVBoxLayout* textLayout = new QVBoxLayout();
     textLayout->setContentsMargins(12, 10, 0, 10);
-    textLayout->setSpacing(2);  // Увеличенный интервал
+    textLayout->setSpacing(0);  // Увеличенный интервал
 
     QLabel* titleLabel = new QLabel(title, container);
     titleLabel->setObjectName("title");
@@ -206,4 +237,10 @@ void CustomNotification::paintEvent(QPaintEvent* event)
     painter.setBrush(gradient);
     painter.setPen(Qt::NoPen);
     painter.drawRoundedRect(rect().adjusted(1, 1, -1, -1), 8, 8);
+}
+
+void showCustomNotification(const QString& title, const QString& message, int displayTime)
+{
+    CustomNotification* notification = new CustomNotification(title, message, nullptr, displayTime);
+    notification->showNotification();
 }

@@ -11,12 +11,6 @@
 #include <QIcon>
 #include <QSvgRenderer>
 
-void TraySystem::showCustomNotification(const QString& title, const QString& message, int displayTime)
-{
-    CustomNotification* notification = new CustomNotification(title, message, nullptr, displayTime);
-    notification->showNotification();
-}
-
 TraySystem::TraySystem(QObject *parent) 
     : QObject(parent),
       m_trayIcon(new QSystemTrayIcon(this)),
@@ -77,8 +71,8 @@ void TraySystem::show()
 {
     m_trayIcon->show();
     showCustomNotification(
-        "Приложение запущено",
-        "Работает в системном трее тест как быстро ты успеешь прочитать такое важное и большое сообщение о том как пройти гта пять очень и очень быстро"
+        "Джарвис Запускается!",
+        "С помощью уведомлений я буду общраться с вами."
     );
 }
 

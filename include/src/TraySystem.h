@@ -10,9 +10,6 @@ class TraySystem : public QObject
 {
     Q_OBJECT
 
-public slots:
-    void showCustomNotification(const QString& title, const QString& message, int displayTime = -1);
-
 public:
     explicit TraySystem(QObject *parent = nullptr);
     void setup(QApplication* app);

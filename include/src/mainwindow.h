@@ -1,16 +1,23 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
-#include <QMainWindow>  // Изменяем с QWidget на QMainWindow
+#include <QMainWindow>
+#include <QCloseEvent>
 #include "ui_main.h"
 
-class MainWindow : public QMainWindow  // Наследуемся от QMainWindow
+class MainWindow : public QMainWindow
 {
+    Q_OBJECT
+
 public:
     explicit MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
 
     static MainWindow* instance() { return m_instance; }
+    void showWindow(); // Публичный метод для показа окна
+
+protected:
+    void closeEvent(QCloseEvent *event) override;
 
 private:
     Ui::MainWindow *ui;
