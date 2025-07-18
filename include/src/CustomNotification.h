@@ -7,6 +7,7 @@
 #include <QTimer>
 #include <QHBoxLayout>
 #include <QPropertyAnimation>
+#include "nlohmann/json.hpp"
 
 class CustomNotification : public QWidget
 {
@@ -35,5 +36,8 @@ private:
 
 QIcon createSvgIcon(const QString &path, int size = 64);
 void showCustomNotification(const QString& title, const QString& message, int displayTime = -1);
+void showCustomNotification(const char* title, const char* message, int displayTime = -1);
+void showCustomNotification(const std::string& title, const std::string& message, int displayTime = -1);
+void showCustomNotification(const char* title, const nlohmann::json& jsonMessage, int displayTime = -1);
 
 #endif // CUSTOMNOTIFICATION_H

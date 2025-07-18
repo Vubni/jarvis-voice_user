@@ -192,7 +192,7 @@ void output_thread() {
         const int silence_timeout = 800;
         auto elapsed_ms_text = duration_cast<milliseconds>(now - last_change_text_time).count();
 
-        if (elapsed_ms >= silence_timeout && !last_text.empty() && elapsed_ms_text >= 700) {
+        if (elapsed_ms >= silence_timeout && !last_text.empty() && elapsed_ms_text >= 850) {
             if (contains_jarvis(last_text) && !is_last_word_jarvis(last_text)) {
                 try{
                     command_execution(last_text, recognized_text_en);

@@ -1,5 +1,6 @@
 #include "api.h"
 #include <vector>
+#include "CustomNotification.h"
 
 bool create_session(json pathsPrograms) {
     const std::string base_url = "https://api.vubni.com/create_session"; 
@@ -63,8 +64,14 @@ void command_processing(string text){
         }
         
         json result = json::parse(response);
-        if (result["answer"]) cout << result["answer"] << endl;
-        if (result["action"]) execute_action(result["action"]);
+
+        if (!result.is_object()) {
+            log_error("Ожидался JSON-объект, получен: " + result.dump());
+            return;
+        }
+
+        if (!result["answer"].is_null()) showCustomNotification("Джарвис", result["answer"]);
+        if (!result["action"].is_null()) execute_action(result["action"]);
     } catch (const exception& e) {
         log_error("Ошибка при выполнении запроса: " + (string)e.what());
     }

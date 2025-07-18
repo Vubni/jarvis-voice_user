@@ -13,6 +13,7 @@
 #include <QLinearGradient>
 #include <QRegularExpression>
 #include <QMouseEvent>
+#include <QThread>
 
 #include "mainwindow.h"
 
@@ -245,9 +246,42 @@ void CustomNotification::paintEvent(QPaintEvent* event)
 
 void showCustomNotification(const QString& title, const QString& message, int displayTime)
 {
-    CustomNotification* notification = new CustomNotification(title, message, nullptr, displayTime);
-    QObject::connect(notification, &CustomNotification::clicked, []() {
-        QMetaObject::invokeMethod(globalMainWindow, "showWindow", Qt::QueuedConnection);
-    });
-    notification->showNotification();
+    // Функция-помощник для создания уведомления
+    auto createNotification = [](const QString& title, const QString& message, int displayTime) {
+        CustomNotification* notification = new CustomNotification(title, message, nullptr, displayTime);
+        QObject::connect(notification, &CustomNotification::clicked, []() {
+            if (globalMainWindow) {
+                QMetaObject::invokeMethod(globalMainWindow, "showWindow", Qt::QueuedConnection);
+            }
+        });
+        notification->showNotification();
+    };
+
+    // Проверка потока
+    if (QThread::currentThread() != QCoreApplication::instance()->thread()) {
+        // Вызов в главном потоке через очередь
+        QMetaObject::invokeMethod(QCoreApplication::instance(),
+            [=]() { createNotification(title, message, displayTime); },
+            Qt::QueuedConnection);
+    } else {
+        // Прямой вызов в главном потоке
+        createNotification(title, message, displayTime);
+    }
+}
+
+void showCustomNotification(const char* title, const char* message, int displayTime)
+{
+    showCustomNotification(QString::fromUtf8(title), QString::fromUtf8(message), displayTime);
+}
+
+void showCustomNotification(const std::string& title, const std::string& message, int displayTime)
+{
+    showCustomNotification(QString::fromStdString(title), QString::fromStdString(message), displayTime);
+}
+
+void showCustomNotification(const char* title, const nlohmann::json& jsonMessage, int displayTime) {
+    std::string message = jsonMessage.is_string() 
+        ? jsonMessage.get<std::string>() 
+        : jsonMessage.dump();
+    showCustomNotification(title, message.c_str(), displayTime);
 }
