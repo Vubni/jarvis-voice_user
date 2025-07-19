@@ -92,16 +92,17 @@ CustomNotification::CustomNotification(const QString& title,
 
 void CustomNotification::mousePressEvent(QMouseEvent* event)
 {
-    if (event->button() == Qt::LeftButton) {
-        // 1. Останавливаем таймер автозакрытия
-        if (m_timer && m_timer->isActive()) {
+    if(m_isClosing) return; // Игнорируем клики во время закрытия
+    
+    if(event->button() == Qt::LeftButton) {
+        if(m_timer && m_timer->isActive()) {
             m_timer->stop();
         }
         
-        // 2. Испускаем сигнал clicked()
-        emit clicked();
+        // Отключаем дальнейшие клики
+        setAttribute(Qt::WA_TransparentForMouseEvents);
         
-        // 3. Запускаем анимацию закрытия
+        emit clicked();
         closeNotification();
     }
     QWidget::mousePressEvent(event);
@@ -202,6 +203,7 @@ void CustomNotification::setupAnimation()
 
 void CustomNotification::showNotification()
 {
+    if(m_isClosing) return;
     adjustSize();
     
     // Позиционирование в правом нижнем углу с отступами
@@ -217,15 +219,28 @@ void CustomNotification::showNotification()
 
 void CustomNotification::closeNotification()
 {
-    // Плавное исчезновение
-    QPropertyAnimation* closeAnim = new QPropertyAnimation(this, "windowOpacity", this);
+    if(m_isClosing) return; // Защита от повторного вызова
+    m_isClosing = true;
+    
+    // Остановить все активные анимации
+    if(m_animation->state() == QAbstractAnimation::Running) {
+        m_animation->stop();
+    }
+    
+    // Удаляем эффект тени перед закрытием
+    if(graphicsEffect()) {
+        graphicsEffect()->setEnabled(false);
+    }
+
+    QPropertyAnimation* closeAnim = new QPropertyAnimation(this, "windowOpacity");
     closeAnim->setDuration(300);
     closeAnim->setStartValue(1.0);
     closeAnim->setEndValue(0.0);
     closeAnim->setEasingCurve(QEasingCurve::InBack);
     
-    connect(closeAnim, &QPropertyAnimation::finished, this, &CustomNotification::close);
-    closeAnim->start();
+    // Используем прямой вызов close() без лямбды
+    connect(closeAnim, &QPropertyAnimation::finished, this, &QWidget::close);
+    closeAnim->start(QAbstractAnimation::DeleteWhenStopped);
 }
 
 void CustomNotification::paintEvent(QPaintEvent* event)

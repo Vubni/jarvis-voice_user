@@ -184,7 +184,7 @@ void output_thread() {
 
         if (play_status){
             auto elapsed = duration_cast<milliseconds>(now - last_found_jarvis).count();
-            if (elapsed >= 5000 && last_text == jarvis_text) play_status = false;
+            if (elapsed >= 5500 && last_text == jarvis_text) play_status = false;
             if (last_text == jarvis_text) continue;
         }
 
@@ -193,9 +193,10 @@ void output_thread() {
         auto elapsed_ms_text = duration_cast<milliseconds>(now - last_change_text_time).count();
 
         if (elapsed_ms >= silence_timeout && !last_text.empty() && elapsed_ms_text >= 850) {
+            bool status_execution = false;
             if (contains_jarvis(last_text) && !is_last_word_jarvis(last_text)) {
                 try{
-                    command_execution(last_text, recognized_text_en);
+                    status_execution = command_execution(last_text, recognized_text_en);
                 } catch (const exception& e) {
                     log_error("Command execution error: " + (string)e.what());
                 }

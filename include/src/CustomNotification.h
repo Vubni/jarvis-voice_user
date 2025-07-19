@@ -24,6 +24,7 @@ signals:
     void clicked(); // Добавленный сигнал для кликов
 
 private:
+    bool m_isClosing = false;
     void setupUI(const QString& title, const QString& message);
     void setupAnimation();
     void closeNotification();

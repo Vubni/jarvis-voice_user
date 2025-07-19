@@ -36,7 +36,7 @@ bool create_session(json pathsPrograms) {
     }
 }
 
-void command_processing(string text){
+bool command_processing(string text){
     const string base_url = "https://api.vubni.com/command_processing"; 
     
     json request_body = {
@@ -60,24 +60,27 @@ void command_processing(string text){
         );
         if (http_code != 200) {
             log_error("[ERROR] HTTP status code: " + http_code);
-            return;
+            return false;
         }
         
         json result = json::parse(response);
 
         if (!result.is_object()) {
             log_error("Ожидался JSON-объект, получен: " + result.dump());
-            return;
+            return false;
         }
 
-        if (!result["answer"].is_null()) showCustomNotification("Джарвис", result["answer"]);
-        if (!result["action"].is_null()) execute_action(result["action"]);
+        if (result["answer"] == "" and result["action"] == "") return false;
+
+        if (result["answer"] != "") showCustomNotification("Джарвис", result["answer"]);
+        if (result["action"] != "") execute_action(result["action"]);
+        return true;
     } catch (const exception& e) {
         log_error("Ошибка при выполнении запроса: " + (string)e.what());
     }
 }
 
-void command_execution(string text_ru, string text_en) {
+bool command_execution(string text_ru, string text_en) {
     log_info("Command execution started with text: RU: " + text_ru + "| EN: " + text_en);
-    command_processing(text_ru);
+    return command_processing(text_ru);
 }

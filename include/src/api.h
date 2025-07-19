@@ -13,7 +13,7 @@
 using namespace std;
 using json = nlohmann::json;
 
-void command_execution(string text_ru, string text_en);
+bool command_execution(string text_ru, string text_en);
 bool create_session(json pathsPrograms);
 
 #endif // COMMAND_PROCESSOR_H
