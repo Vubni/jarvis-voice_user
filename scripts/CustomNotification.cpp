@@ -210,7 +210,7 @@ void CustomNotification::showNotification()
     QScreen* screen = QGuiApplication::primaryScreen();
     QRect screenGeometry = screen->geometry();
     int x = screenGeometry.width() - width() - 25;
-    int y = screenGeometry.height() - height() - 25;
+    int y = screenGeometry.height() - height() - 50;
     move(x, y);
 
     show();

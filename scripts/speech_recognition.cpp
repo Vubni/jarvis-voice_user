@@ -142,10 +142,22 @@ void output_thread() {
     string pending_audio_path;
     string jarvis_text;
     bool status = true;
+    int count_attemp_jarvis = 0;
 
     while (!stop_flag) {
         this_thread::sleep_for(chrono::milliseconds(100));
         lock_guard<mutex> lock(text_mutex);
+
+        if (recognized_text.empty() && recognized_text_en.empty()) {
+            count_attemp_jarvis++;
+            if (count_attemp_jarvis >= 15) {
+                count_attemp_jarvis = 0;
+                reset_request = true;
+                reset_request_en = true;
+                queue_ru_cv.notify_all();
+                queue_en_cv.notify_all();
+            }
+        }
 
         if (recognized_text != last_text) {
             cout << "\r\33[2K[Recognition]: " << recognized_text << flush;
