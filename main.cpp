@@ -30,6 +30,7 @@
 #include "mainwindow.h"
 #include "TraySystem.h"
 #include <QtSvg>
+#include "autostart.h"
 
 using namespace std;
 using namespace std::chrono;
@@ -49,6 +50,10 @@ std::thread thread_recognition;
 
 int initialize(){
     mainCommands();
+
+    wchar_t exePath[MAX_PATH];
+    GetModuleFileNameW(nullptr, exePath, MAX_PATH);
+    AutoStart::AddToStartup(L"Jarvis Vubni", exePath);
 
     log_info("Create session..");
     nlohmann::json pathsPrograms = InstalledPrograms::GetInstalledPrograms();

@@ -20,6 +20,8 @@ set(CMAKE_TOOLCHAIN_FILE
 
 # Настройки для Windows
 if(WIN32)
+    set(APP_RESOURCES app.rc)
+
     add_definitions(-D_CRT_SECURE_NO_WARNINGS -D_CRT_NONSTDC_NO_WARNINGS)
     
     # Добавляем манифест для правильной работы с треем
@@ -71,7 +73,7 @@ add_definitions(-D_CRT_SECURE_NO_WARNINGS -D_CRT_NONSTDC_NO_WARNINGS)
 
 qt6_wrap_ui(UI_HEADERS main.ui)
 qt_add_resources(RESOURCE_FILES "resources.qrc")
-add_executable(jarvis ${SOURCE_EXE} ${MOC_SOURCES} ${UI_HEADERS})
+add_executable(jarvis ${SOURCE_EXE} ${MOC_SOURCES} ${UI_HEADERS} ${APP_RESOURCES})
 
 target_sources(jarvis PRIVATE ${RESOURCE_FILES})
 # if(MSVC)
@@ -100,7 +102,9 @@ Qt::Svg
 ucrt.lib
 vcruntime.lib
 msvcrt.lib
-legacy_stdio_definitions.lib)
+legacy_stdio_definitions.lib
+ole32.lib
+shlwapi.lib)
 
 include_directories(${Qt6Gui_INCLUDE_DIRS})
 
@@ -113,3 +117,5 @@ include_directories(${Qt6Gui_INCLUDE_DIRS})
 #         "$<TARGET_FILE:jarvis>"
 #     WORKING_DIRECTORY "${CMAKE_BINARY_DIR}"
 # )
+
+file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/icon.ico DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
