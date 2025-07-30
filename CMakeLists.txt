@@ -46,7 +46,6 @@ include_directories(include
 
 link_directories(${LIB_DIR})
 
-add_library(base64 ${CMAKE_SOURCE_DIR}/libs/base64.cpp)
 
 
 add_definitions(-DCURL_STATICLIB -D_WIN32)
@@ -71,27 +70,20 @@ qt6_wrap_cpp(MOC_SOURCES
 
 add_definitions(-D_CRT_SECURE_NO_WARNINGS -D_CRT_NONSTDC_NO_WARNINGS)
 
-qt6_wrap_ui(UI_HEADERS main.ui)
+qt6_wrap_ui(UI_HEADERS ./design/main.ui)
+
+add_custom_target(force_ui_update ALL
+    DEPENDS ${UI_HEADERS}
+)
 qt_add_resources(RESOURCE_FILES "resources.qrc")
 add_executable(jarvis ${SOURCE_EXE} ${MOC_SOURCES} ${UI_HEADERS} ${APP_RESOURCES})
 
 target_sources(jarvis PRIVATE ${RESOURCE_FILES})
-# if(MSVC)
-#     # Копирование CRT DLL
-#     get_filename_component(VC_REDIST_DIR "[HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\VisualStudio\\14.0\\VC\\Runtimes\\x64;InstallDir]" ABSOLUTE)
-#     set(VCRUNTIME_DLLS "${VC_REDIST_DIR}/vcruntime140.dll" "${VC_REDIST_DIR}/vcruntime140_1.dll" "${VC_REDIST_DIR}/msvcp140.dll")
-#     add_custom_command(TARGET jarvis POST_BUILD
-#     COMMAND ${CMAKE_COMMAND} -E copy
-#         "${LIB_DIR}/libcurl.dll"
-#         "${LIB_DIR}/zlib1.dll"
-#         $<TARGET_FILE_DIR:jarvis>
-#     )
-# endif()
 
 target_link_libraries(jarvis
 PRIVATE pv_recorder vosk nlohmann_json::nlohmann_json 
 libcurl_a Normaliz.lib advapi32.lib
-${CURL_LIBRARY} ws2_32 Crypt32 Wldap32 base64
+${CURL_LIBRARY} ws2_32 Crypt32 Wldap32
 sndfile user32
 SDL2 SDL2_mixer
 Qt::Core
@@ -107,15 +99,3 @@ ole32.lib
 shlwapi.lib)
 
 include_directories(${Qt6Gui_INCLUDE_DIRS})
-
-
-# add_custom_command(TARGET jarvis POST_BUILD
-#     COMMAND "${Qt6_DIR}/../../../bin/windeployqt.exe"
-#         --verbose 1
-#         --no-compiler-runtime
-#         --no-translations
-#         "$<TARGET_FILE:jarvis>"
-#     WORKING_DIRECTORY "${CMAKE_BINARY_DIR}"
-# )
-
-file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/icon.ico DESTINATION ${CMAKE_CURRENT_BINARY_DIR})

@@ -67,7 +67,8 @@ void recognition_thread(VoskRecognizer* recognizer) {
         if (!audio_data.empty()) {
             vosk_recognizer_accept_waveform_s(recognizer, audio_data.data(), static_cast<int>(audio_data.size()));
             
-            if (const char* partial = vosk_recognizer_partial_result(recognizer)) {
+            const char* partial = vosk_recognizer_partial_result(recognizer);
+            if (partial != nullptr) {
                 try {
                     lock_guard<mutex> lock(text_mutex);
                     recognized_text = json::parse(partial)["partial"];
@@ -80,6 +81,10 @@ void recognition_thread(VoskRecognizer* recognizer) {
 }
 
 void recognition_en_thread(VoskRecognizer* recognizer) {
+    if (!recognizer) {
+        log_error("EN recognizer is null!");
+        return;
+    }
     while (!stop_flag) {
         vector<int16_t> audio_data;
         try {
@@ -110,7 +115,8 @@ void recognition_en_thread(VoskRecognizer* recognizer) {
         if (!audio_data.empty()) {
             vosk_recognizer_accept_waveform_s(recognizer, audio_data.data(), static_cast<int>(audio_data.size()));
             
-            if (const char* partial = vosk_recognizer_partial_result(recognizer)) {
+            const char* partial = vosk_recognizer_partial_result(recognizer);
+            if (partial != nullptr) {
                 try {
                     lock_guard<mutex> lock(text_mutex);
                     recognized_text_en = json::parse(partial)["partial"];
@@ -263,7 +269,6 @@ void start_speech_recognition(pv_recorder_t* recorder,
     if (recognizer_en) {
         thread(recognition_en_thread, recognizer_en).detach();
     }
-    
     thread(output_thread).detach();
 }
 

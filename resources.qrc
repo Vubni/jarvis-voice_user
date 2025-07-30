@@ -1,6 +1,24 @@
-<!DOCTYPE RCC>
-<RCC version="1.0">
-    <qresource prefix="/">
-        <file>images/logo.svg</file>
-    </qresource>
+<RCC>
+  <qresource prefix="/">
+    <file>images/microphone-white.png</file>
+    <file>images/home-white.png</file>
+    <file>images/profile-white.png</file>
+    <file>images/scenarios-white.png</file>
+    <file>images/settings-white.png</file>
+    <file>images/site-white.png</file>
+    <file>images/telegram-white.png</file>
+    <file>images/telegram.png</file>
+    <file>images/profile.png</file>
+    <file>images/home.png</file>
+    <file>images/scenarios.png</file>
+    <file>images/settings.png</file>
+    <file>images/site.png</file>
+    <file>images/telegram.svg</file>
+    <file>images/site.svg</file>
+    <file>images/profile.svg</file>
+    <file>images/scenarios.svg</file>
+    <file>images/settings.svg</file>
+    <file>images/home.svg</file>
+    <file>images/logo.svg</file>
+  </qresource>
 </RCC>
