@@ -1,5 +1,6 @@
 <RCC>
   <qresource prefix="/">
+    <file>images/plugins-white.png</file>
     <file>images/microphone-white.png</file>
     <file>images/home-white.png</file>
     <file>images/profile-white.png</file>

@@ -2,6 +2,7 @@
 #include "ui_main.h"
 #include <QCloseEvent>
 #include <QWindowStateChangeEvent> // Для работы с состояниями окна
+#include <iostream>
 
 MainWindow* MainWindow::m_instance = nullptr;
 
@@ -23,7 +24,8 @@ MainWindow::~MainWindow()
 
 void MainWindow::initializeUI()
 {
-    // Ваша инициализация UI
+    replaceCheckBox(this, "horizontalLayout_4", "switch_mute");
+    replaceCheckBox(this, "horizontalLayout_3", "switch_animated");
 }
 
 void MainWindow::closeEvent(QCloseEvent *event)

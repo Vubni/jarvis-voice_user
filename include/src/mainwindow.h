@@ -4,6 +4,7 @@
 #include <QMainWindow>
 #include <QCloseEvent>
 #include "ui_main.h"
+#include "switch.h"
 
 class MainWindow : public QMainWindow
 {

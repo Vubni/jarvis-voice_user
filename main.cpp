@@ -33,6 +33,9 @@
 #include "autostart.h"
 #include <QStyleFactory>
 
+#include <dwmapi.h> // Windows API
+#pragma comment(lib, "dwmapi.lib")
+
 using namespace std;
 using namespace std::chrono;
 using json = nlohmann::json;
@@ -48,6 +51,12 @@ VoskRecognizer* recognizer_en;
 pv_recorder_t* recorder = nullptr;
 std::atomic<bool> recognition_active(false);
 std::thread thread_recognition;
+
+void setTitleBarColor(HWND hwnd, const QColor &color) {
+    const DWORD dwAttribute = DWMWA_CAPTION_COLOR; // Атрибут цвета заголовка
+    const COLORREF cref = RGB(color.red(), color.green(), color.blue());
+    DwmSetWindowAttribute(hwnd, dwAttribute, &cref, sizeof(cref));
+}
 
 int initialize(){
     mainCommands();
@@ -131,7 +140,7 @@ int main(int argc, char *argv[]) {
     darkPalette.setColor(QPalette::Link, QColor(42, 130, 218));
 
     darkPalette.setColor(QPalette::Highlight, QColor(42, 130, 218));
-    darkPalette.setColor(QPalette::HighlightedText, Qt::black);
+    darkPalette.setColor(QPalette::HighlightedText, QColor("#000000"));
     
     qApp->setPalette(darkPalette);
 
@@ -146,6 +155,9 @@ int main(int argc, char *argv[]) {
     MainWindow* mainWindow = static_cast<MainWindow*>(createMainWindow());
     if (!mainWindow) {
         return -1;
+    }
+    if (HWND hwnd = reinterpret_cast<HWND>(mainWindow->winId())) {
+        setTitleBarColor(hwnd, QColor(25,25,25));
     }
     mainWindow->show();
     globalMainWindow = mainWindow;
