@@ -5,6 +5,9 @@
 #include <QCloseEvent>
 #include "ui_main.h"
 #include "switch.h"
+#include <iostream>
+
+using namespace std;
 
 class MainWindow : public QMainWindow
 {
@@ -14,6 +17,7 @@ public:
     explicit MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
 
+    void open_page(QString page_name);
     static MainWindow* instance() { return m_instance; }
 public slots:
     void showWindow();
@@ -21,11 +25,23 @@ public slots:
 protected:
     void closeEvent(QCloseEvent *event) override;
 
+private slots:
+    void microphone_action();
+    void clicked_site();
+    void clicked_telegram();
+    void clicked_home();
+    void clicked_scenarious();
+    void clicked_plugins();
+    void clicked_profile();
+    void clicked_settings();
+
 private:
     Ui::MainWindow *ui;
     static MainWindow* m_instance;
+    bool microphone_status = true;
 
     void initializeUI();
+    void create_button_connect(const QString& childName, void (MainWindow::*slot)());
 };
 
 #endif // MAINWINDOW_H
