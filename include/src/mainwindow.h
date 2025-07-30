@@ -17,7 +17,7 @@ public:
     explicit MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
 
-    void open_page(QString page_name);
+    void open_page(const QString page_name);
     static MainWindow* instance() { return m_instance; }
 public slots:
     void showWindow();
@@ -43,5 +43,8 @@ private:
     void initializeUI();
     void create_button_connect(const QString& childName, void (MainWindow::*slot)());
 };
+
+void append_user_text_console(const string text);
+void append_jarvis_text_console(const string text);
 
 #endif // MAINWINDOW_H

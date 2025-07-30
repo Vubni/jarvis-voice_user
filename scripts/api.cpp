@@ -1,6 +1,7 @@
 #include "api.h"
 #include <vector>
 #include "CustomNotification.h"
+#include "mainwindow.h"
 
 bool create_session(json pathsPrograms) {
     const std::string base_url = "https://api.vubni.com/create_session"; 
@@ -37,6 +38,7 @@ bool create_session(json pathsPrograms) {
 }
 
 bool command_processing(string text){
+    append_user_text_console(text);
     const string base_url = "https://api.vubni.com/command_processing"; 
     
     json request_body = {
@@ -74,6 +76,10 @@ bool command_processing(string text){
 
         if (result["answer"] != "") showCustomNotification("Джарвис", result["answer"]);
         if (result["action"] != "") execute_action(result["action"]);
+        if (result["answer"] != "")
+            append_jarvis_text_console(result["answer"]);
+        else if (result["action"] != "")
+            append_jarvis_text_console("Выполняю");
         return true;
     } catch (const exception& e) {
         log_error("Ошибка при выполнении запроса: " + (string)e.what());

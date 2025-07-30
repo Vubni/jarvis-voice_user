@@ -118,13 +118,30 @@ void MainWindow::microphone_action()
     }
 }
 
-void MainWindow::open_page(QString page_name){
+
+void MainWindow::open_page(const QString page_name){
     QStackedWidget *stackedWidget = findChild<QStackedWidget*>("stackedWidget");
     if (!stackedWidget) {
-        qWarning() << "button_microphone not found during initialization!";
+        qWarning() << "stackedWidget not found during initialization!";
     }
     QWidget *targetPage = stackedWidget->findChild<QWidget*>(page_name);
     if (targetPage) {
         stackedWidget->setCurrentWidget(targetPage);
     }
+}
+
+void append_text_console(const QString text){
+    MainWindow* mainWindow = MainWindow::instance();
+    if (QPlainTextEdit *console = mainWindow->findChild<QPlainTextEdit*>("console")) {
+        console->appendPlainText(text);
+        console->ensureCursorVisible();
+    }
+}
+
+void append_user_text_console(const string text){
+    append_text_console(QString("🔵Вы: ") + QString::fromStdString(text));
+}
+
+void append_jarvis_text_console(const string text){
+    append_text_console(QString("🟢Джарвис: ") + QString::fromStdString(text));
 }
