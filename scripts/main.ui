@@ -824,7 +824,7 @@ border: 0px;
        <number>1</number>
       </property>
       <property name="currentIndex">
-       <number>2</number>
+       <number>1</number>
       </property>
       <widget class="QWidget" name="settings">
        <layout class="QVBoxLayout" name="verticalLayout_15">
@@ -1188,7 +1188,7 @@ background-color: rgb(25,25,25);
          <number>5</number>
         </property>
         <property name="topMargin">
-         <number>20</number>
+         <number>15</number>
         </property>
         <property name="rightMargin">
          <number>5</number>
@@ -1594,7 +1594,7 @@ border-radius: 5px;
                     <x>0</x>
                     <y>0</y>
                     <width>264</width>
-                    <height>227</height>
+                    <height>231</height>
                    </rect>
                   </property>
                  </widget>
@@ -1608,20 +1608,8 @@ border-radius: 5px;
          </layout>
         </item>
        </layout>
-       <zorder>widget_5</zorder>
        <zorder>verticalSpacer_4</zorder>
        <zorder>label_main_profile</zorder>
-       <zorder>label_prefix_4</zorder>
-       <zorder>label_prefix_6</zorder>
-       <zorder>layoutWidget</zorder>
-       <zorder>button_plugins_2</zorder>
-       <zorder>horizontalSpacer</zorder>
-       <zorder>button_plugins_2</zorder>
-       <zorder>comboBox</zorder>
-       <zorder>label_prefix_8</zorder>
-       <zorder>widget_2</zorder>
-       <zorder>widget_3</zorder>
-       <zorder>widget_4</zorder>
       </widget>
       <widget class="QWidget" name="home">
        <layout class="QVBoxLayout" name="verticalLayout_8">
@@ -1632,7 +1620,7 @@ border-radius: 5px;
          <number>5</number>
         </property>
         <property name="topMargin">
-         <number>20</number>
+         <number>15</number>
         </property>
         <property name="rightMargin">
          <number>5</number>

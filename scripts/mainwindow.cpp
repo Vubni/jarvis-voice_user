@@ -6,6 +6,7 @@
 #include <QDesktopServices>
 #include <QObject>
 #include <QDebug>
+#include "speech_recognition.h"
 
 MainWindow* MainWindow::m_instance = nullptr;
 
@@ -113,8 +114,10 @@ void MainWindow::microphone_action()
     QPushButton *button_microphone = findChild<QPushButton*>("button_microphone");
     if (!microphone_status){
         button_microphone->setIcon(QIcon(":images/microphone-off-white.png"));
+        recording_enabled = false;
     } else {
         button_microphone->setIcon(QIcon(":images/microphone-white.png"));
+        recording_enabled = true;
     }
 }
 

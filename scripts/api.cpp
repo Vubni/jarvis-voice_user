@@ -34,6 +34,7 @@ bool create_session(json pathsPrograms) {
         return true;
     } catch (const std::exception& e) {
         log_error("Ошибка при выполнении запроса: " + std::string(e.what()));
+        return false;
     }
 }
 
@@ -83,6 +84,7 @@ bool command_processing(string text){
         return true;
     } catch (const exception& e) {
         log_error("Ошибка при выполнении запроса: " + (string)e.what());
+        return false;
     }
 }
 

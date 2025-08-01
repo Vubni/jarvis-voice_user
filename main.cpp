@@ -43,14 +43,10 @@ using json = nlohmann::json;
 AnimationController controller;
 MainWindow* globalMainWindow = nullptr;
 
-VoskModel* model;
-VoskModel* model_en;
-VoskRecognizer* recognizer;
-VoskRecognizer* recognizer_en;
-
+VoskModel* model = nullptr;
+VoskModel* model_en = nullptr;
 pv_recorder_t* recorder = nullptr;
 std::atomic<bool> recognition_active(false);
-std::thread thread_recognition;
 
 void setTitleBarColor(HWND hwnd, const QColor &color) {
     const DWORD dwAttribute = DWMWA_CAPTION_COLOR; // Атрибут цвета заголовка
@@ -89,8 +85,8 @@ int initialize(){
             return -1;
         }
 
-        recognizer = vosk_recognizer_new(model, 16000.0f);
-        vosk_recognizer_set_max_alternatives(recognizer, 0);
+        recognizer_ru = vosk_recognizer_new(model, 16000.0f);
+        vosk_recognizer_set_max_alternatives(recognizer_ru, 0);
     }
 
     {
@@ -190,13 +186,13 @@ int main(int argc, char *argv[]) {
     }
 
     recognition_active = true;
-    thread_recognition = std::thread([]() {
+    thread thread_recognition = std::thread([]() {
         initialize();
         
         if (!recognition_active) return;
         
         cout << "Recording started... Speak into the microphone." << endl;
-        start_speech_recognition(recorder, recognizer, recognizer_en);
+        start_speech_recognition(recorder);
     });
     int qt_result = app.exec();
 
@@ -211,7 +207,7 @@ int main(int argc, char *argv[]) {
     stop_speech_recognition();
     pv_recorder_stop(recorder);
     pv_recorder_delete(recorder);
-    vosk_recognizer_free(recognizer);
+    vosk_recognizer_free(recognizer_ru);
     vosk_recognizer_free(recognizer_en);
     vosk_model_free(model);
     vosk_model_free(model_en);
