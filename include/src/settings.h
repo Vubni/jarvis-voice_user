@@ -1,5 +1,5 @@
-#ifndef API_H
-#define API_H
+#ifndef SETTINGS_H
+#define SETTINGS_H
 
 #pragma once
 #include <nlohmann/json.hpp>

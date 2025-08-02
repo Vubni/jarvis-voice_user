@@ -30,10 +30,11 @@ private slots:
     void clicked_site();
     void clicked_telegram();
     void clicked_home();
-    void clicked_scenarious();
+    void clicked_scenarios();
     void clicked_plugins();
     void clicked_profile();
     void clicked_settings();
+    void animate_action(bool checked);
 
 private:
     Ui::MainWindow *ui;
@@ -42,8 +43,10 @@ private:
 
     void initializeUI();
     void create_button_connect(const QString& childName, void (MainWindow::*slot)());
+    void create_switch_connect(const QString& childName, void (MainWindow::*slot)(bool));
 };
 
+void append_text_console(const QString text);
 void append_user_text_console(const string text);
 void append_jarvis_text_console(const string text);
 

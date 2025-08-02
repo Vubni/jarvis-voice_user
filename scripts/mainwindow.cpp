@@ -7,6 +7,8 @@
 #include <QObject>
 #include <QDebug>
 #include "speech_recognition.h"
+#include "settings.h"
+#include "switch.h"
 
 MainWindow* MainWindow::m_instance = nullptr;
 
@@ -38,10 +40,12 @@ void MainWindow::initializeUI()
     create_button_connect("button_telegram", &MainWindow::clicked_telegram);
     create_button_connect("button_site", &MainWindow::clicked_site);
     create_button_connect("button_home", &MainWindow::clicked_home);
-    create_button_connect("button_scenarios", &MainWindow::clicked_scenarious);
+    create_button_connect("button_scenarios", &MainWindow::clicked_scenarios);
     create_button_connect("button_plugins", &MainWindow::clicked_plugins);
     create_button_connect("button_profile", &MainWindow::clicked_profile);
     create_button_connect("button_settings", &MainWindow::clicked_settings);
+
+    create_switch_connect("switch_animated", &MainWindow::animate_action);
 }
 
 void MainWindow::closeEvent(QCloseEvent *event)
@@ -70,13 +74,23 @@ void MainWindow::showWindow()
     setFocus();                    // Устанавливаем фокус
 }
 
+void MainWindow::create_switch_connect(const QString& childName, void (MainWindow::*slot)(bool)) {
+    Switch *cb = findChild<Switch*>(childName);
+    if (cb) {
+        connect(cb, &Switch::clicked,
+                this, slot);
+    } else {
+        qWarning() << "Switch not found during initialization!";
+    }
+}
+
 void MainWindow::create_button_connect(const QString& childName, void (MainWindow::*slot)()) {
     QPushButton *button = findChild<QPushButton*>(childName);
     if (button) {
         connect(button, &QPushButton::clicked, 
                 this, slot);
     } else {
-        qWarning() << "button_microphone not found during initialization!";
+        qWarning() << "button not found during initialization!";
     }
 }
 
@@ -92,12 +106,12 @@ void MainWindow::clicked_home() {
     open_page("home");
 }
 
-void MainWindow::clicked_scenarious() {
-    open_page("development");
+void MainWindow::clicked_scenarios() {
+    open_page("scenarios");
 }
 
 void MainWindow::clicked_plugins() {
-    open_page("development");
+    open_page("plugins");
 }
 
 void MainWindow::clicked_telegram() {
@@ -131,6 +145,12 @@ void MainWindow::open_page(const QString page_name){
     if (targetPage) {
         stackedWidget->setCurrentWidget(targetPage);
     }
+}
+
+void MainWindow::animate_action(bool checked){
+    json setting = {{"animation", checked}};
+    update_settings(setting);
+    save_settings();
 }
 
 void append_text_console(const QString text){

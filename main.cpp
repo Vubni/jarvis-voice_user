@@ -32,6 +32,7 @@
 #include <QtSvg>
 #include "autostart.h"
 #include <QStyleFactory>
+#include "settings.h"
 
 #include <dwmapi.h> // Windows API
 #pragma comment(lib, "dwmapi.lib")
@@ -56,6 +57,7 @@ void setTitleBarColor(HWND hwnd, const QColor &color) {
 
 int initialize(){
     mainCommands();
+    load_settings("settings.json");
 
     wchar_t exePath[MAX_PATH];
     GetModuleFileNameW(nullptr, exePath, MAX_PATH);

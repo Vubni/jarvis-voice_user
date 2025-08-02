@@ -213,7 +213,6 @@ void output_thread() {
                     play_pending = true;
                     pending_audio_path = "greet/" + (string)randomizer({"1", "2"});
                 }
-                
                 last_found_jarvis = system_clock::now();
                 jarvis_text = last_text; 
                 play_status = false;

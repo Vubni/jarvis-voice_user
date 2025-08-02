@@ -14,6 +14,7 @@
 #ifdef Q_OS_WIN
 #include <windows.h>
 #endif
+#include "settings.h"
 
 class GradientWidget : public QWidget {
     Q_OBJECT
@@ -113,6 +114,9 @@ namespace {
 
 extern "C" {
     void OnAnimation() {
+        json settings = get_settings();
+        if (!settings["animation"].get<bool>()) return;
+
         if (!QApplication::instance()) {
             qWarning() << "QApplication must be initialized before calling OnAnimation.";
             return;

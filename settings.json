@@ -1,0 +1,10 @@
+{
+    "token": "",
+    "model": "small",
+    "language": "ru",
+    "prefix": "Джарвис",
+    "animation": true,
+    "mute": true,
+    "speech_en": true,
+    "save_cache": true
+}

@@ -39,7 +39,6 @@ bool create_session(json pathsPrograms) {
 }
 
 bool command_processing(string text){
-    append_user_text_console(text);
     const string base_url = "https://api.vubni.com/command_processing"; 
     
     json request_body = {
@@ -73,10 +72,12 @@ bool command_processing(string text){
             return false;
         }
 
-        if (result["answer"] == "" and result["action"] == "") return false;
+        if (result["answer"] == "" && result["action"] == "") return false;
 
         if (result["answer"] != "") showCustomNotification("Джарвис", result["answer"]);
         if (result["action"] != "") execute_action(result["action"]);
+
+        append_user_text_console(text);
         if (result["answer"] != "")
             append_jarvis_text_console(result["answer"]);
         else if (result["action"] != "")
