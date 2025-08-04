@@ -5,6 +5,7 @@
 #include <audiopolicy.h>
 #include <vector>
 #include <algorithm>
+#include "settings.h"
 
 struct SessionVolume {
     DWORD pid;
@@ -14,6 +15,9 @@ struct SessionVolume {
 std::vector<SessionVolume> savedVolumes;
 
 void MuteOtherApplications(float reductionPercent) {
+    json settings = get_settings();
+    if (!settings["mute"].get<bool>()) return;
+
     if (!savedVolumes.empty()) {
         return; // Уже приглушено
     }

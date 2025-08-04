@@ -46,6 +46,7 @@ void MainWindow::initializeUI()
     create_button_connect("button_settings", &MainWindow::clicked_settings);
 
     create_switch_connect("switch_animated", &MainWindow::animate_action);
+    create_switch_connect("switch_mute", &MainWindow::mute_action);
 }
 
 void MainWindow::closeEvent(QCloseEvent *event)
@@ -149,6 +150,12 @@ void MainWindow::open_page(const QString page_name){
 
 void MainWindow::animate_action(bool checked){
     json setting = {{"animation", checked}};
+    update_settings(setting);
+    save_settings();
+}
+
+void MainWindow::mute_action(bool checked){
+    json setting = {{"mute", checked}};
     update_settings(setting);
     save_settings();
 }

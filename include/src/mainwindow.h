@@ -35,6 +35,7 @@ private slots:
     void clicked_profile();
     void clicked_settings();
     void animate_action(bool checked);
+    void mute_action(bool checked);
 
 private:
     Ui::MainWindow *ui;
