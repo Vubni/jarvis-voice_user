@@ -57,7 +57,6 @@ void setTitleBarColor(HWND hwnd, const QColor &color) {
 
 int initialize(){
     mainCommands();
-    load_settings("settings.json");
 
     wchar_t exePath[MAX_PATH];
     GetModuleFileNameW(nullptr, exePath, MAX_PATH);
@@ -120,6 +119,8 @@ int initialize(){
 }
 
 int main(int argc, char *argv[]) {
+    load_settings("settings.json");
+    
     QApplication app(argc, argv);
     app.setQuitOnLastWindowClosed(false);
 

@@ -33,7 +33,7 @@ void MainWindow::initializeUI()
     open_page("home");
     replaceCheckBox(this, "horizontalLayout_4", "switch_mute");
     replaceCheckBox(this, "horizontalLayout_3", "switch_animated");
-    replaceCheckBox(this, "horizontalLayout_15", "switch_language_speech");
+    replaceCheckBox(this, "horizontalLayout_15", "switch_speech_en");
     replaceCheckBox(this, "horizontalLayout_12", "switch_cache");
 
     create_button_connect("button_microphone", &MainWindow::microphone_action);
@@ -47,6 +47,14 @@ void MainWindow::initializeUI()
 
     create_switch_connect("switch_animated", &MainWindow::animate_action);
     create_switch_connect("switch_mute", &MainWindow::mute_action);
+    create_switch_connect("switch_speech_en", &MainWindow::speech_en_switch);
+    create_switch_connect("switch_cache", &MainWindow::cache_switch);
+
+    json settings = get_settings();
+    switch_init("switch_animated", settings["animation"]);
+    switch_init("switch_mute", settings["mute"]);
+    switch_init("switch_speech_en", settings["speech_en"]);
+    switch_init("switch_cache", settings["save_cache"]);
 }
 
 void MainWindow::closeEvent(QCloseEvent *event)
@@ -73,6 +81,15 @@ void MainWindow::showWindow()
     // Дополнительные меры для гарантии активации
     QApplication::processEvents(); // Обрабатываем события
     setFocus();                    // Устанавливаем фокус
+}
+
+void MainWindow::switch_init(const QString& childName, const bool param) {
+    Switch *cb = findChild<Switch*>(childName);
+    if (cb) {
+        cb->setChecked(param);
+    } else {
+        qWarning() << "Switch not found during initialization!";
+    }
 }
 
 void MainWindow::create_switch_connect(const QString& childName, void (MainWindow::*slot)(bool)) {
@@ -156,6 +173,18 @@ void MainWindow::animate_action(bool checked){
 
 void MainWindow::mute_action(bool checked){
     json setting = {{"mute", checked}};
+    update_settings(setting);
+    save_settings();
+}
+
+void MainWindow::speech_en_switch(bool checked){
+    json setting = {{"speech_en", checked}};
+    update_settings(setting);
+    save_settings();
+}
+
+void MainWindow::cache_switch(bool checked){
+    json setting = {{"save_cache", checked}};
     update_settings(setting);
     save_settings();
 }

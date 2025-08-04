@@ -2,6 +2,7 @@
 #include <vector>
 #include "CustomNotification.h"
 #include "mainwindow.h"
+#include "settings.h"
 
 bool create_session(json pathsPrograms) {
     const std::string base_url = "https://api.vubni.com/create_session"; 
@@ -38,11 +39,16 @@ bool create_session(json pathsPrograms) {
     }
 }
 
-bool command_processing(string text){
+bool command_processing(const string text_ru, string text_en){
+    json settings = get_settings();
     const string base_url = "https://api.vubni.com/command_processing"; 
+
+    if (!settings["speech_en"]) text_en = "";
     
     json request_body = {
-        {"text", text}
+        {"text", text_ru},
+        {"text_en", text_en},
+        {"save_cache", settings["save_cache"]}
     };
     
     map<string, string> headers = {
@@ -77,7 +83,7 @@ bool command_processing(string text){
         if (result["answer"] != "") showCustomNotification("Джарвис", result["answer"]);
         if (result["action"] != "") execute_action(result["action"]);
 
-        append_user_text_console(text);
+        append_user_text_console(text_ru);
         if (result["answer"] != "")
             append_jarvis_text_console(result["answer"]);
         else if (result["action"] != "")
@@ -89,7 +95,7 @@ bool command_processing(string text){
     }
 }
 
-bool command_execution(string text_ru, string text_en) {
+bool command_execution(const string text_ru, string text_en) {
     log_info("Command execution started with text: RU: " + text_ru + "| EN: " + text_en);
-    return command_processing(text_ru);
+    return command_processing(text_ru, text_en);
 }

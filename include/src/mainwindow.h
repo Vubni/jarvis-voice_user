@@ -36,6 +36,8 @@ private slots:
     void clicked_settings();
     void animate_action(bool checked);
     void mute_action(bool checked);
+    void speech_en_switch(bool checked);
+    void cache_switch(bool checked);
 
 private:
     Ui::MainWindow *ui;
@@ -43,6 +45,7 @@ private:
     bool microphone_status = true;
 
     void initializeUI();
+    void switch_init(const QString& childName, const bool param);
     void create_button_connect(const QString& childName, void (MainWindow::*slot)());
     void create_switch_connect(const QString& childName, void (MainWindow::*slot)(bool));
 };
