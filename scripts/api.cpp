@@ -46,7 +46,7 @@ bool command_processing(const string text_ru, string text_en){
     if (!settings["speech_en"]) text_en = "";
     
     json request_body = {
-        {"text", text_ru},
+        {"text_ru", text_ru},
         {"text_en", text_en},
         {"save_cache", settings["save_cache"]}
     };
