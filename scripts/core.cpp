@@ -1,5 +1,83 @@
 #include "core.h"
+#include <algorithm>
+#include <cctype>
 using namespace std;
+
+std::string toLowerCase(const std::string& str) {
+    std::string result;
+    for (size_t i = 0; i < str.length();) {
+        unsigned char c = static_cast<unsigned char>(str[i]);
+        // Обработка ASCII символов
+        if (c < 0x80) {
+            result += static_cast<char>(std::tolower(c));
+            i++;
+        }
+        // Обработка двухбайтовых символов UTF-8 (кириллица)
+        else if ((c & 0xE0) == 0xC0) {
+            if (i + 1 >= str.length()) {
+                result += c; // Неполный символ, копируем как есть
+                break;
+            }
+            unsigned char c1 = static_cast<unsigned char>(str[i + 1]);
+            // Декодируем символ в кодовую точку Unicode
+            uint32_t code_point = ((c & 0x1F) << 6) | (c1 & 0x3F);
+            
+            // Преобразуем русские заглавные буквы в строчные
+            if (code_point == 0x0401) { // Буква Ё
+                code_point = 0x0451;   // Заменяем на ё
+            } else if (code_point >= 0x0410 && code_point <= 0x042F) {
+                code_point += 0x20; // Преобразуем А-Я в а-я
+            }
+            
+            // Кодируем обратно в UTF-8
+            result += static_cast<char>(0xC0 | (code_point >> 6));
+            result += static_cast<char>(0x80 | (code_point & 0x3F));
+            i += 2;
+        }
+        // Пропускаем символы длиннее 2 байт без изменений
+        else if ((c & 0xF0) == 0xE0) { // 3-байтовые символы
+            if (i + 2 >= str.length()) break;
+            result.append(str.substr(i, 3));
+            i += 3;
+        } else if ((c & 0xF8) == 0xF0) { // 4-байтовые символы
+            if (i + 3 >= str.length()) break;
+            result.append(str.substr(i, 4));
+            i += 4;
+        } else {
+            result += c; // Некорректный байт, оставляем как есть
+            i++;
+        }
+    }
+    return result;
+}
+
+// Заменяет все вхождения подстроки oldChar на newChar (работает с UTF-8)
+void replaceChar(std::string& str, const std::string& oldChar, const std::string& newChar) {
+    size_t pos = 0;
+    while ((pos = str.find(oldChar, pos)) != std::string::npos) {
+        str.replace(pos, oldChar.length(), newChar);
+        pos += newChar.length();
+    }
+}
+
+// Удаляет n символов с конца строки (корректно для UTF-8)
+void truncateFromEnd(std::string& str, size_t n) {
+    if (n == 0 || str.empty()) return;
+    
+    size_t count = 0;
+    size_t pos = str.length();
+    
+    while (pos > 0) {
+        pos--;
+        unsigned char c = static_cast<unsigned char>(str[pos]);
+        if ((c & 0xC0) != 0x80) { // Начало символа UTF-8
+            count++;
+            if (count == n) break;
+        }
+    }
+    
+    str.resize(pos);
+}
 
 string json_to_key_value_string(const json& data) {
     std::string result;

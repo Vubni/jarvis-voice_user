@@ -80,7 +80,8 @@ int initialize(){
 
     {
         log_info("Create RU model..");
-        model = vosk_model_new("./models/small");
+        json settings = get_settings();
+        model = vosk_model_new(("./models/" + settings["model"].get<std::string>()).c_str());
         if (!model) {
             cerr << "Failed to load Vosk model" << endl;
             return -1;
@@ -120,7 +121,7 @@ int initialize(){
 
 int main(int argc, char *argv[]) {
     load_settings("settings.json");
-    
+
     QApplication app(argc, argv);
     app.setQuitOnLastWindowClosed(false);
 

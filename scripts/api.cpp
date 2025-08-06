@@ -53,7 +53,7 @@ bool command_processing(const string text_ru, string text_en){
     
     map<string, string> headers = {
         {"Content-Type", "application/json"},
-        {"Authorization", "Bearer SDreD78eE6fE4"},
+        {"Authorization", "Bearer " + settings["token"]},
         {"Accept", "application/json"}
     };
     

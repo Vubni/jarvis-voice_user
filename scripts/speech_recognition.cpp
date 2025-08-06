@@ -11,6 +11,7 @@
 #include "audioPlayer.h"
 #include "api.h"
 #include <Windows.h>
+#include "settings.h"
 
 using namespace std;
 using namespace std::chrono;
@@ -150,12 +151,28 @@ void recognition_en_thread() {
 
 
 bool contains_jarvis(const string& text) {
-    return text.find("джарв") != string::npos || text.find("джерв") != string::npos;
+    json settings = get_settings();
+    string prefix1 = toLowerCase(settings["prefix"].get<std::string>());
+    string prefix2 = toLowerCase(settings["prefix"].get<std::string>());
+    if (prefix1.length() > 6){
+        truncateFromEnd(prefix1, 2);
+        truncateFromEnd(prefix2, 2);
+    }
+    replaceChar(prefix2, "а", "е");
+    return text.find(prefix1) != string::npos || text.find(prefix2) != string::npos;
 }
 
 bool is_last_word_jarvis(const string& text) {
+    json settings = get_settings();
+    string prefix1 = toLowerCase(settings["prefix"].get<std::string>());
+    string prefix2 = toLowerCase(settings["prefix"].get<std::string>());
+    if (prefix1.length() > 6){
+        truncateFromEnd(prefix1, 2);
+        truncateFromEnd(prefix2, 2);
+    }
+    replaceChar(prefix2, "а", "е");
     string last_word = get_word(text, -1);
-    return last_word.find("джарв") != string::npos || last_word.find("джерв") != string::npos;
+    return last_word.find(prefix1) != string::npos || last_word.find(prefix2) != string::npos;
 }
 
 void output_thread() {

@@ -824,7 +824,7 @@ border: 0px;
        <number>1</number>
       </property>
       <property name="currentIndex">
-       <number>0</number>
+       <number>2</number>
       </property>
       <widget class="QWidget" name="settings">
        <layout class="QVBoxLayout" name="verticalLayout_15">
@@ -1593,8 +1593,8 @@ border-radius: 5px;
                    <rect>
                     <x>0</x>
                     <y>0</y>
-                    <width>264</width>
-                    <height>231</height>
+                    <width>100</width>
+                    <height>30</height>
                    </rect>
                   </property>
                  </widget>
@@ -1719,7 +1719,7 @@ border-radius: 5px;
                  </widget>
                 </item>
                 <item>
-                 <widget class="QLineEdit" name="lineEdit">
+                 <widget class="QLineEdit" name="lineEdit_jarvis">
                   <property name="sizePolicy">
                    <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
                     <horstretch>1</horstretch>

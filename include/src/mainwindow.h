@@ -38,6 +38,7 @@ private slots:
     void mute_action(bool checked);
     void speech_en_switch(bool checked);
     void cache_switch(bool checked);
+    void updateJarvis(const QString &text);
 
 private:
     Ui::MainWindow *ui;

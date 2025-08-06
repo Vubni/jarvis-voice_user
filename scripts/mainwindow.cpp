@@ -55,6 +55,13 @@ void MainWindow::initializeUI()
     switch_init("switch_mute", settings["mute"]);
     switch_init("switch_speech_en", settings["speech_en"]);
     switch_init("switch_cache", settings["save_cache"]);
+
+    QLineEdit *lineEdit = findChild<QLineEdit*>("lineEdit_jarvis");
+    if (lineEdit) {
+        connect(lineEdit, &QLineEdit::textChanged, this, &MainWindow::updateJarvis);
+    } else {
+        qWarning() << "Switch not found during initialization!";
+    }
 }
 
 void MainWindow::closeEvent(QCloseEvent *event)
@@ -163,6 +170,12 @@ void MainWindow::open_page(const QString page_name){
     if (targetPage) {
         stackedWidget->setCurrentWidget(targetPage);
     }
+}
+
+void MainWindow::updateJarvis(const QString &text){
+    json setting = {{"prefix", text.toStdString()}};
+    update_settings(setting);
+    save_settings();
 }
 
 void MainWindow::animate_action(bool checked){
