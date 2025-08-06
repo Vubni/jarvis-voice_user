@@ -1,5 +1,6 @@
 <RCC>
   <qresource prefix="/">
+    <file>images/log-in-white.png</file>
     <file>images/pay_white.png</file>
     <file>images/trash-can-white.png</file>
     <file>images/telegram-colored1.png</file>

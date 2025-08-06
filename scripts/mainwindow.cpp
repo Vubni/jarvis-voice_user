@@ -35,6 +35,10 @@ MainWindow::~MainWindow()
 void MainWindow::initializeUI()
 {
     open_page("home");
+    QPushButton *button = findChild<QPushButton*>("button_home");
+    button->setEnabled(false);
+    lastClickedButton = button;
+
     replaceCheckBox(this, "horizontalLayout_4", "switch_mute");
     replaceCheckBox(this, "horizontalLayout_3", "switch_animated");
     replaceCheckBox(this, "horizontalLayout_15", "switch_speech_en");
@@ -59,6 +63,15 @@ void MainWindow::initializeUI()
     switch_init("switch_mute", settings["mute"]);
     switch_init("switch_speech_en", settings["speech_en"]);
     switch_init("switch_cache", settings["save_cache"]);
+
+    QPlainTextEdit *console = findChild<QPlainTextEdit*>("console");
+    if (console) {
+        QPalette pal = console->palette();
+        pal.setColor(QPalette::PlaceholderText, QColor("#B0B0B0"));
+        console->setPalette(pal);
+    } else {
+        qWarning() << "Switch not found during initialization!";
+    }
 
     QLineEdit *lineEdit = findChild<QLineEdit*>("lineEdit_jarvis");
     if (lineEdit) {
@@ -126,22 +139,60 @@ void MainWindow::create_button_connect(const QString& childName, void (MainWindo
 
 void MainWindow::clicked_settings() {
     open_page("settings");
+    QPushButton* clickedButton = qobject_cast<QPushButton*>(sender());
+    if (lastClickedButton && lastClickedButton != clickedButton) {
+        // Разблокировать предыдущую кнопку
+        lastClickedButton->setChecked(false);
+        lastClickedButton->setEnabled(true);
+    }
+    clickedButton->setEnabled(false);
+    lastClickedButton = clickedButton;
 }
 
 void MainWindow::clicked_profile() {
     open_page("profile");
+    QPushButton* clickedButton = qobject_cast<QPushButton*>(sender());
+    if (lastClickedButton && lastClickedButton != clickedButton) {
+        // Разблокировать предыдущую кнопку
+        lastClickedButton->setChecked(false);
+        lastClickedButton->setEnabled(true);
+    }
+    clickedButton->setEnabled(false);
+    lastClickedButton = clickedButton;
 }
 
 void MainWindow::clicked_home() {
     open_page("home");
+    QPushButton* clickedButton = qobject_cast<QPushButton*>(sender());
+    if (lastClickedButton && lastClickedButton != clickedButton) {
+        // Разблокировать предыдущую кнопку
+        lastClickedButton->setChecked(false);
+        lastClickedButton->setEnabled(true);
+    }
+    clickedButton->setEnabled(false);
+    lastClickedButton = clickedButton;
 }
 
 void MainWindow::clicked_scenarios() {
     open_page("scenarios");
+    QPushButton* clickedButton = qobject_cast<QPushButton*>(sender());
+    if (lastClickedButton && lastClickedButton != clickedButton) {
+        lastClickedButton->setChecked(false);
+        lastClickedButton->setEnabled(true);
+    }
+    clickedButton->setEnabled(false);
+    lastClickedButton = clickedButton;
 }
 
 void MainWindow::clicked_plugins() {
     open_page("plugins");
+    QPushButton* clickedButton = qobject_cast<QPushButton*>(sender());
+    if (lastClickedButton && lastClickedButton != clickedButton) {
+        lastClickedButton->setChecked(false);
+        lastClickedButton->setEnabled(true);
+    }
+    clickedButton->setEnabled(false);
+    lastClickedButton = clickedButton;
 }
 
 void MainWindow::clicked_telegram() {

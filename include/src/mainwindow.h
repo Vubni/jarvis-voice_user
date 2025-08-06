@@ -48,6 +48,7 @@ private:
     Ui::MainWindow *ui;
     static MainWindow* m_instance;
     bool microphone_status = true;
+    QPushButton* lastClickedButton = nullptr;
 
     void initializeUI();
     void switch_init(const QString& childName, const bool param);
