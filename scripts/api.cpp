@@ -7,6 +7,7 @@
 bool create_session(json pathsPrograms) {
     const std::string base_url = "https://api.vubni.com/create_session"; 
     
+    json settings = get_settings();
     // Формируем тело запроса с преобразованной строкой
     json request_body = {
         {"paths", pathsPrograms}
@@ -14,7 +15,7 @@ bool create_session(json pathsPrograms) {
     
     std::map<std::string, std::string> headers = {
         {"Content-Type", "application/json"},
-        {"Authorization", "Bearer SDreD78eE6fE4"},
+        {"Authorization", "Bearer " + (string)settings["token"]},
         {"Accept", "application/json"}
     };
     
@@ -53,7 +54,7 @@ bool command_processing(const string text_ru, string text_en){
     
     map<string, string> headers = {
         {"Content-Type", "application/json"},
-        {"Authorization", "Bearer " + settings["token"]},
+        {"Authorization", "Bearer " + (string)settings["token"]},
         {"Accept", "application/json"}
     };
     
@@ -72,7 +73,6 @@ bool command_processing(const string text_ru, string text_en){
         }
         
         json result = json::parse(response);
-
         if (!result.is_object()) {
             log_error("Ожидался JSON-объект, получен: " + result.dump());
             return false;

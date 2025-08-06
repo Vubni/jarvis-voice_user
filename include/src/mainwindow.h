@@ -25,6 +25,9 @@ public slots:
 protected:
     void closeEvent(QCloseEvent *event) override;
 
+signals:
+    void appendConsoleRequested(QString text);
+
 private slots:
     void microphone_action();
     void clicked_site();
@@ -39,6 +42,7 @@ private slots:
     void speech_en_switch(bool checked);
     void cache_switch(bool checked);
     void updateJarvis(const QString &text);
+    void appendConsoleText(QString text);
 
 private:
     Ui::MainWindow *ui;

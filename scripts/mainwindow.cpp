@@ -20,6 +20,10 @@ MainWindow::MainWindow(QWidget *parent)
     ui->setupUi(this);
     initializeUI();
     setAttribute(Qt::WA_DeleteOnClose, false);
+
+    connect(this, &MainWindow::appendConsoleRequested, 
+            this, &MainWindow::appendConsoleText, 
+            Qt::QueuedConnection);
 }
 
 MainWindow::~MainWindow()
@@ -62,6 +66,7 @@ void MainWindow::initializeUI()
     } else {
         qWarning() << "Switch not found during initialization!";
     }
+    lineEdit->setText(QString::fromStdString(settings["prefix"]));
 }
 
 void MainWindow::closeEvent(QCloseEvent *event)
@@ -202,11 +207,17 @@ void MainWindow::cache_switch(bool checked){
     save_settings();
 }
 
-void append_text_console(const QString text){
-    MainWindow* mainWindow = MainWindow::instance();
-    if (QPlainTextEdit *console = mainWindow->findChild<QPlainTextEdit*>("console")) {
+void MainWindow::appendConsoleText(QString text) {
+    if (QPlainTextEdit *console = findChild<QPlainTextEdit*>("console")) {
         console->appendPlainText(text);
         console->ensureCursorVisible();
+    }
+}
+
+void append_text_console(const QString text) {
+    MainWindow* mainWindow = MainWindow::instance();
+    if (mainWindow) {
+        emit mainWindow->appendConsoleRequested(text);
     }
 }
 
