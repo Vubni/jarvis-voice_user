@@ -50,6 +50,8 @@ void MainWindow::initializeUI()
 
     QLabel *label_error_auth = findChild<QLabel*>("label_error_auth");
     label_error_auth->setHidden(true);
+    QLabel *label_error_reg = findChild<QLabel*>("label_error_reg");
+    label_error_reg->setHidden(true);
 
     replaceCheckBox(this, "horizontalLayout_4", "switch_mute");
     replaceCheckBox(this, "horizontalLayout_3", "switch_animated");
@@ -65,7 +67,10 @@ void MainWindow::initializeUI()
     create_button_connect("button_profile", &MainWindow::clicked_profile);
     create_button_connect("button_settings", &MainWindow::clicked_settings);
 
+    create_button_connect("button_to_auth", &MainWindow::clicked_to_auth);
+    create_button_connect("button_to_reg", &MainWindow::clicked_to_reg);
     create_button_connect("button_auth", &MainWindow::clicked_authorization);
+    create_button_connect("button_register", &MainWindow::clicked_register);
 
     create_switch_connect("switch_animated", &MainWindow::animate_action);
     create_switch_connect("switch_mute", &MainWindow::mute_action);
@@ -217,6 +222,13 @@ void MainWindow::open_authorization() {
     frame->setEnabled(false);
 }
 
+void MainWindow::clicked_to_auth() {
+    open_page("auth");
+}
+
+void MainWindow::clicked_to_reg() {
+    open_page("register_page");
+}
 
 void MainWindow::clicked_authorization() {
     QLineEdit *login_line = findChild<QLineEdit*>("lineEdit_auth_login");
@@ -251,6 +263,61 @@ void MainWindow::clicked_authorization() {
     } else {
         QLabel *label_error_auth = findChild<QLabel*>("label_error_auth");
         label_error_auth->setText("Неверный логин или пароль.");
+        label_error_auth->setHidden(false);
+    }
+}
+
+void MainWindow::clicked_register() {
+    QLineEdit *login_line = findChild<QLineEdit*>("lineEdit_register_login");
+    string login = login_line->text().toStdString();
+    if (login.empty()) {
+        QLabel *label_error_reg = findChild<QLabel*>("label_error_reg");
+        label_error_reg->setText("Введите логин.");
+        label_error_reg->setHidden(false);
+        return;
+    } else if (login.length() < 3 || login.length() > 20) {
+        QLabel *label_error_reg = findChild<QLabel*>("label_error_reg");
+        label_error_reg->setText("Логин должен быть не менее 3 символов и не более 20.");
+        label_error_reg->setHidden(false);
+        return;
+    }
+    QLineEdit *email_line = findChild<QLineEdit*>("lineEdit_register_email");
+    string email = email_line->text().toStdString();
+    if (email.empty()) {
+        QLabel *label_error_reg = findChild<QLabel*>("label_error_reg");
+        label_error_reg->setText("Введите почту.");
+        label_error_reg->setHidden(false);
+        return;
+    } else if (email.length() > 256 || email.find('@') == std::string::npos || email.find('.') == std::string::npos) {
+        QLabel *label_error_reg = findChild<QLabel*>("label_error_reg");
+        label_error_reg->setText("Введите корректную почту.");
+        label_error_reg->setHidden(false);
+        return;
+    }
+    QLineEdit *password_line = findChild<QLineEdit*>("lineEdit_register_password");
+    string password = password_line->text().toStdString();
+    if (password.empty()) {
+        QLabel *label_error_reg = findChild<QLabel*>("label_error_reg");
+        label_error_reg->setText("Введите пароль.");
+        label_error_reg->setHidden(false);
+        return;
+    }
+    string status = registration(login, email, password);
+    if (status == "success") {
+        QFrame *frame = findChild<QFrame*>("frame");
+        frame->setEnabled(true);
+        open_page("home");
+        status_auth = true;
+        nlohmann::json pathsPrograms = InstalledPrograms::GetInstalledPrograms();
+        bool result = create_session(pathsPrograms);
+        if (result){
+            log_info("Successful Create session.");
+        } else {
+            log_error("Failed to create session.");
+        }
+    } else {
+        QLabel *label_error_auth = findChild<QLabel*>("label_error_auth");
+        label_error_auth->setText(status.c_str());
         label_error_auth->setHidden(false);
     }
 }

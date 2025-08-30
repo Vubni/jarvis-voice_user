@@ -44,7 +44,10 @@ private slots:
     void updateJarvis(const QString &text);
     void appendConsoleText(QString text);
 
+    void clicked_to_auth();
+    void clicked_to_reg();
     void clicked_authorization();
+    void clicked_register();
 
 private:
     Ui::MainWindow *ui;
