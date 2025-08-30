@@ -44,6 +44,8 @@ private slots:
     void updateJarvis(const QString &text);
     void appendConsoleText(QString text);
 
+    void clicked_authorization();
+
 private:
     Ui::MainWindow *ui;
     static MainWindow* m_instance;
@@ -51,6 +53,7 @@ private:
     QPushButton* lastClickedButton = nullptr;
 
     void initializeUI();
+    void open_authorization();
     void switch_init(const QString& childName, const bool param);
     void create_button_connect(const QString& childName, void (MainWindow::*slot)());
     void create_switch_connect(const QString& childName, void (MainWindow::*slot)(bool));

@@ -5,7 +5,7 @@
 #include "settings.h"
 
 bool create_session(json pathsPrograms) {
-    const std::string base_url = "https://api.vubni.com/create_session"; 
+    const std::string base_url = "https://api.vubni.com/commands/create_session"; 
     
     json settings = get_settings();
     // Формируем тело запроса с преобразованной строкой
@@ -42,7 +42,7 @@ bool create_session(json pathsPrograms) {
 
 bool command_processing(const string text_ru, string text_en){
     json settings = get_settings();
-    const string base_url = "https://api.vubni.com/command_processing"; 
+    const string base_url = "https://api.vubni.com/commands/command_processing"; 
 
     if (!settings["speech_en"]) text_en = "";
     

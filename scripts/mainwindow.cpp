@@ -9,6 +9,10 @@
 #include "speech_recognition.h"
 #include "settings.h"
 #include "switch.h"
+#include "authorization.h"
+#include "installed_programs.h"
+#include "logger.h"
+#include "api.h"
 
 MainWindow* MainWindow::m_instance = nullptr;
 
@@ -34,10 +38,18 @@ MainWindow::~MainWindow()
 
 void MainWindow::initializeUI()
 {
-    open_page("home");
+    bool status_auth = checker_authorization();
+    if (!status_auth) {
+        open_authorization();
+    } else {
+        open_page("home");
+    }
     QPushButton *button = findChild<QPushButton*>("button_home");
     button->setEnabled(false);
     lastClickedButton = button;
+
+    QLabel *label_error_auth = findChild<QLabel*>("label_error_auth");
+    label_error_auth->setHidden(true);
 
     replaceCheckBox(this, "horizontalLayout_4", "switch_mute");
     replaceCheckBox(this, "horizontalLayout_3", "switch_animated");
@@ -52,6 +64,8 @@ void MainWindow::initializeUI()
     create_button_connect("button_plugins", &MainWindow::clicked_plugins);
     create_button_connect("button_profile", &MainWindow::clicked_profile);
     create_button_connect("button_settings", &MainWindow::clicked_settings);
+
+    create_button_connect("button_auth", &MainWindow::clicked_authorization);
 
     create_switch_connect("switch_animated", &MainWindow::animate_action);
     create_switch_connect("switch_mute", &MainWindow::mute_action);
@@ -194,6 +208,55 @@ void MainWindow::clicked_plugins() {
     clickedButton->setEnabled(false);
     lastClickedButton = clickedButton;
 }
+
+
+
+void MainWindow::open_authorization() {
+    open_page("auth");
+    QFrame *frame = findChild<QFrame*>("frame");
+    frame->setEnabled(false);
+}
+
+
+void MainWindow::clicked_authorization() {
+    QLineEdit *login_line = findChild<QLineEdit*>("lineEdit_auth_login");
+    string login = login_line->text().toStdString();
+    if (login.empty()) {
+        QLabel *label_error_auth = findChild<QLabel*>("label_error_auth");
+        label_error_auth->setText("Введите логин.");
+        label_error_auth->setHidden(false);
+        return;
+    }
+    QLineEdit *password_line = findChild<QLineEdit*>("lineEdit_auth_password");
+    string password = password_line->text().toStdString();
+    if (password.empty()) {
+        QLabel *label_error_auth = findChild<QLabel*>("label_error_auth");
+        label_error_auth->setText("Введите пароль.");
+        label_error_auth->setHidden(false);
+        return;
+    }
+    bool status = authorization(login, password);
+    if (status) {
+        QFrame *frame = findChild<QFrame*>("frame");
+        frame->setEnabled(true);
+        open_page("home");
+        status_auth = true;
+        nlohmann::json pathsPrograms = InstalledPrograms::GetInstalledPrograms();
+        bool result = create_session(pathsPrograms);
+        if (result){
+            log_info("Successful Create session.");
+        } else {
+            log_error("Failed to create session.");
+        }
+    } else {
+        QLabel *label_error_auth = findChild<QLabel*>("label_error_auth");
+        label_error_auth->setText("Неверный логин или пароль.");
+        label_error_auth->setHidden(false);
+    }
+}
+
+
+
 
 void MainWindow::clicked_telegram() {
     QDesktopServices::openUrl(QUrl("https://t.me/javris_pc"));

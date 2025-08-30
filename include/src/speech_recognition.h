@@ -32,6 +32,8 @@ extern std::atomic<bool> recording_enabled;
 extern VoskRecognizer* recognizer_ru;
 extern VoskRecognizer* recognizer_en;
 
+extern bool status_auth;
+
 // Функции потоков
 void output_thread();
 void audio_record_thread(pv_recorder_t* recorder);

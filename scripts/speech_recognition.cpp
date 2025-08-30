@@ -12,6 +12,7 @@
 #include "api.h"
 #include <Windows.h>
 #include "settings.h"
+#include "authorization.h"
 
 using namespace std;
 using namespace std::chrono;
@@ -39,6 +40,8 @@ std::atomic<bool> recording_enabled(true);
 
 VoskRecognizer* recognizer_ru = nullptr;
 VoskRecognizer* recognizer_en = nullptr;
+
+bool status_auth;
 
 // Внешние зависимости
 extern AnimationController controller;
@@ -216,7 +219,7 @@ void output_thread() {
             last_text.clear();
         }
 
-        if (recognized_text != last_text) {
+        if (recognized_text != last_text && status_auth) {
             cout << "\r\33[2K[Recognition]: " << recognized_text << flush;
             last_text = recognized_text;
             last_change_time = system_clock::now();
@@ -311,6 +314,7 @@ void audio_record_thread(pv_recorder_t* recorder) {
 }
 void start_speech_recognition(pv_recorder_t* recorder) 
 {
+    status_auth = checker_authorization();
     thread(audio_record_thread, recorder).detach();
     thread(recognition_thread).detach();
     

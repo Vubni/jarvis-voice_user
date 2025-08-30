@@ -68,7 +68,7 @@ int initialize(){
     if (result){
         log_info("Successful Create session.");
     } else {
-        log_error("Failed to create session. Program will exit.");
+        log_error("Failed to create session.");
     }
 
     vector<HWND> temp = GetActiveWindows();
