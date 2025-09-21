@@ -52,6 +52,8 @@ void MainWindow::initializeUI()
     label_error_auth->setHidden(true);
     QLabel *label_error_reg = findChild<QLabel*>("label_error_reg");
     label_error_reg->setHidden(true);
+    QLabel *label_error_reg = findChild<QLabel*>("label_error_forgot");
+    label_error_reg->setHidden(true);
 
     replaceCheckBox(this, "horizontalLayout_4", "switch_mute");
     replaceCheckBox(this, "horizontalLayout_3", "switch_animated");
@@ -68,7 +70,11 @@ void MainWindow::initializeUI()
     create_button_connect("button_settings", &MainWindow::clicked_settings);
 
     create_button_connect("button_to_auth", &MainWindow::clicked_to_auth);
+    create_button_connect("button_to_auth_2", &MainWindow::clicked_to_auth);
     create_button_connect("button_to_reg", &MainWindow::clicked_to_reg);
+    create_button_connect("button_to_reg_2", &MainWindow::clicked_to_reg);
+    create_button_connect("button_to_forgot", &MainWindow::clicked_to_forgot);
+    create_button_connect("button_to_forgot_2", &MainWindow::clicked_to_forgot);
     create_button_connect("button_auth", &MainWindow::clicked_authorization);
     create_button_connect("button_register", &MainWindow::clicked_register);
 
@@ -228,6 +234,10 @@ void MainWindow::clicked_to_auth() {
 
 void MainWindow::clicked_to_reg() {
     open_page("register_page");
+}
+
+void MainWindow::clicked_to_forgot() {
+    open_page("forgot_password");
 }
 
 void MainWindow::clicked_authorization() {

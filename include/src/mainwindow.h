@@ -46,6 +46,7 @@ private slots:
 
     void clicked_to_auth();
     void clicked_to_reg();
+    void clicked_to_forgot();
     void clicked_authorization();
     void clicked_register();
 
