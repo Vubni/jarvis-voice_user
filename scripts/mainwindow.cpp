@@ -52,8 +52,8 @@ void MainWindow::initializeUI()
     label_error_auth->setHidden(true);
     QLabel *label_error_reg = findChild<QLabel*>("label_error_reg");
     label_error_reg->setHidden(true);
-    QLabel *label_error_reg = findChild<QLabel*>("label_error_forgot");
-    label_error_reg->setHidden(true);
+    QLabel *label_error_forgot = findChild<QLabel*>("label_error_forgot");
+    label_error_forgot->setHidden(true);
 
     replaceCheckBox(this, "horizontalLayout_4", "switch_mute");
     replaceCheckBox(this, "horizontalLayout_3", "switch_animated");

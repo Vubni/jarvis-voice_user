@@ -20,7 +20,7 @@ BEGIN
             VALUE "FileDescription",  "Голосовой помощник для управления компьютером с помощью искусственного интеллекта"
             VALUE "FileVersion",      "4.0.0"
             VALUE "ProductVersion",   "4.0.0"
-            VALUE "LegalCopyright",   "Copyright © 2025 Егор Иманаев"
+            VALUE "LegalCopyright",   "Copyright © 2026 Егор Иманаев"
             VALUE "InternalName",     "jarvis"
             VALUE "ProductName",      "jarvis"
         END

@@ -20,10 +20,10 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 # Настройки путей
 set(LIB_DIR "${CMAKE_SOURCE_DIR}/libs")
-set(CMAKE_PREFIX_PATH "E:/Q/Qt")
+set(CMAKE_PREFIX_PATH "E:/Q/Qt") # Путь к установленному Qt
 set(VCPKG_TARGET_TRIPLET "x64-windows" CACHE STRING "")
 set(CMAKE_TOOLCHAIN_FILE 
-    "E:/g++/jarvis_voice/user/vcpkg/scripts/buildsystems/vcpkg.cmake" 
+    "./vcpkg/scripts/buildsystems/vcpkg.cmake" 
     CACHE STRING "Путь к toolchain файлу vcpkg"
 )
 
