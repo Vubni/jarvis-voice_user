@@ -1,4 +1,4 @@
-# Jarvis Voice Assistant
+# Jarvis Voice Assistant (Клиентская часть)
 ![C++](https://img.shields.io/badge/C++-00599C?logo=c%2b%2b&logoColor=white)
 ![Qt6](https://img.shields.io/badge/Qt-41CD52?logo=qt&logoColor=white)
 ![Vosk](https://img.shields.io/badge/Vosk-Speech%20Recognition-blue?logo=google-voice&logoColor=white)
