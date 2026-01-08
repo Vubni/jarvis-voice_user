@@ -1,4 +1,11 @@
 # Jarvis Voice Assistant
+![C++](https://img.shields.io/badge/C++-00599C?logo=c%2b%2b&logoColor=white)
+![Qt6](https://img.shields.io/badge/Qt-41CD52?logo=qt&logoColor=white)
+![Vosk](https://img.shields.io/badge/Vosk-Speech%20Recognition-blue?logo=google-voice&logoColor=white)
+![Windows](https://img.shields.io/badge/Windows-0078D6?logo=windows&logoColor=white)
+![CMake](https://img.shields.io/badge/CMake-064F8C?logo=cmake&logoColor=white)
+![SDL2](https://img.shields.io/badge/SDL2-000000?logo=steamdeck&logoColor=white)
+![License](https://img.shields.io/badge/License-MIT-green)
 
 Голосовой ассистент на C++ с интерфейсом Qt6, локальным распознаванием речи через Vosk и поддержкой автоматизации Windows.
 
